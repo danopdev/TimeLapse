@@ -1,0 +1,41 @@
+<resources>
+    <string name="app_name">TimeLapse</string>
+    <string-array name="view_mode">
+        <item>Original</item>
+        <item>Stabilized</item>
+        <item>Split horizontal</item>
+        <item>Split vertical</item>
+    </string-array>
+    <string-array name="algorithm">
+        <item>Generic</item>
+        <item>Generic (B)</item>
+        <item>Still</item>
+        <item>Horizontal panning</item>
+        <item>Horizontal panning (B)</item>
+        <item>Vertical panning</item>
+        <item>Vertical panning (B)</item>
+        <item>Panning</item>
+        <item>Panning (B)</item>
+        <item>No rotation</item>
+    </string-array>
+    <string-array name="fps">
+        <item>Auto-detect</item>
+        <item>15</item>
+        <item>24</item>
+        <item>25</item>
+        <item>30</item>
+        <item>50</item>
+        <item>60</item>
+        <item>120</item>
+    </string-array>
+    <string-array name="crop">
+        <item>Auto</item>
+        <item>0%</item>
+        <item>5%</item>
+        <item>10%</item>
+    </string-array>
+    <string-array name="video_encoder">
+        <item>H265</item>
+        <item>H264</item>
+    </string-array>
+</resources>
