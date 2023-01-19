@@ -394,7 +394,7 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
 
         binding.textSpeed.text = "${binding.seekBarSpeed.progress + 1}x"
         binding.textSmooth.text = "${binding.seekBarSmooth.progress + 1}x"
-        binding.textTransition.text = "${binding.seekBarTransition.progress + 1}x"
+        binding.textTransition.text = "${binding.seekBarTransition.progress + 1}"
         binding.textFPS.text = Settings.FPS_VALUES[binding.seekBarFPS.progress].toString()
 
         if (hasVideo) {
