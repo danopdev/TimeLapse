@@ -46,7 +46,7 @@ class VideoFramesInput( private val context: Context, private val uri: Uri) : Fr
 
     init {
         val document = DocumentFile.fromSingleUri(context, uri) ?: throw FileNotFoundException()
-        _name = (document.name ?: "unknown") .split('.')[0]
+        _name = FramesInput.fixName(document.name)
         withVideoInput(context, uri) { videoInput ->
             _fps = videoInput.get(CAP_PROP_FPS).toInt()
             _width = videoInput.get(CAP_PROP_FRAME_WIDTH).toInt()

@@ -50,7 +50,7 @@ class ImagesFramesInput(private val context: Context, inputUris: List<Uri>) : Fr
     init {
         if (inputUris.isEmpty()) throw FileNotFoundException()
         val sortedResult = sortUris(inputUris)
-        _name = sortedResult.first
+        _name = FramesInput.fixName(sortedResult.first)
         _uris = sortedResult.second
 
         val firstImage = OpenCVLoadImageFromUri.load(context, _uris[0])
