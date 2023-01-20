@@ -43,10 +43,12 @@ Allow to save the current generated video to Gallery.
 
 ### Smooth
 
-Original | Smooth 10x
--- | --
-https://user-images.githubusercontent.com/7062741/213679622-93adda9e-bbf1-48a0-a1e2-2852dea5c259.mp4 | https://user-images.githubusercontent.com/7062741/213680133-d53dbd9d-dbcf-4fb3-bee8-278dbb0bfc72.mp4
+Original
+https://user-images.githubusercontent.com/7062741/213679622-93adda9e-bbf1-48a0-a1e2-2852dea5c259.mp4
 
+Smooth 10x
+https://user-images.githubusercontent.com/7062741/213680133-d53dbd9d-dbcf-4fb3-bee8-278dbb0bfc72.mp4
+ 
 ### Transition
 
 Input images
@@ -54,12 +56,10 @@ Input images
 -- | -- | -- | --
 ![](examples/transition/input_1_small.jpg) | ![](examples/transition/input_2_small.jpg) | ![](examples/transition/input_3_small.jpg) | ![](examples/transition/input_4_small.jpg)
 
-Crop | No Crop
--- | --
-https://user-images.githubusercontent.com/7062741/213680470-6aa47ff3-3bdf-441e-b035-b6b0e459885e.mp4 |  https://user-images.githubusercontent.com/7062741/213680565-9cc22183-58d9-485b-99c0-36a1046e2c43.mp4
+Crop
+https://user-images.githubusercontent.com/7062741/213680470-6aa47ff3-3bdf-441e-b035-b6b0e459885e.mp4
 
-
-
-https://user-images.githubusercontent.com/7062741/213680916-51fc7499-780a-43ae-9b96-bfa6fad3c07b.mp4
+No Crop
+https://user-images.githubusercontent.com/7062741/213680565-9cc22183-58d9-485b-99c0-36a1046e2c43.mp4
 
 
