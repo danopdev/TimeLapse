@@ -21,18 +21,21 @@
                     android:id="@+id/switchH265"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:paddingBottom="16dp"
                     android:text="H265" />
 
                 <Switch
                     android:id="@+id/switchCrop"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:paddingBottom="16dp"
                     android:text="Crop" />
 
                 <Switch
                     android:id="@+id/switch4K"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:paddingBottom="16dp"
                     android:text="4K" />
             </LinearLayout>
         </ScrollView>
