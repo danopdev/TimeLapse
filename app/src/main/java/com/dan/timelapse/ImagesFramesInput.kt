@@ -1,8 +1,10 @@
 package com.dan.timelapse
 
 import android.content.Context
+import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.documentfile.provider.DocumentFile
+import org.opencv.android.Utils
 import org.opencv.core.Mat
 import java.io.FileNotFoundException
 
@@ -15,6 +17,16 @@ class ImagesFramesInput(private val context: Context, inputUris: List<Uri>) : Fr
                 .filter { file -> file.type?.startsWith("image/") ?: false }
                 .map { file -> file.uri }
             return ImagesFramesInput(context, files)
+        }
+
+        private fun loadImage(context: Context, uri: Uri): Mat {
+            val inputStream = context.contentResolver.openInputStream(uri) ?: throw FileNotFoundException()
+            val bitmap = BitmapFactory.decodeStream(inputStream)
+            inputStream.close()
+            if (null == bitmap) throw FileNotFoundException()
+            val image = Mat()
+            Utils.bitmapToMat(bitmap, image)
+            return image
         }
     }
 
@@ -53,14 +65,14 @@ class ImagesFramesInput(private val context: Context, inputUris: List<Uri>) : Fr
         _name = FramesInput.fixName(sortedResult.first)
         _uris = sortedResult.second
 
-        val firstImage = OpenCVLoadImageFromUri.load(context, _uris[0])
+        val firstImage = loadImage(context, _uris[0])
         _width = firstImage.width()
         _height = firstImage.height()
     }
 
     override fun forEachFrame(callback: (Mat) -> Unit) {
         for(uri in _uris) {
-            callback( OpenCVLoadImageFromUri.load(context, uri) )
+            callback( loadImage(context, uri) )
         }
     }
 }
