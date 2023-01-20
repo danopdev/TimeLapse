@@ -15,9 +15,6 @@ Settings: all public var fields will be saved
 class Settings( private val activity: Activity) {
 
     companion object {
-        const val ENCODER_H265 = 0
-        const val ENCODER_H264 = 1
-
         val SAVE_FOLDER = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES), "TimeLapse")
 
         val FPS_VALUES = arrayOf( 5, 10, 15, 30, 60, 120, 240 )
@@ -30,7 +27,9 @@ class Settings( private val activity: Activity) {
         }
     }
 
-    var encoder: Int = ENCODER_H265
+    var h265: Boolean = true
+    var crop: Boolean = true
+    var encode4K: Boolean = false
 
     init {
         loadProperties()

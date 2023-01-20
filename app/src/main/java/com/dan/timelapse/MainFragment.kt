@@ -304,15 +304,19 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
             if (tmpOutputVideo.exists()) tmpOutputVideo.delete()
 
             val fps = Settings.FPS_VALUES[binding.seekBarFPS.progress]
-            val videoWidth: Int
-            val videoHeight: Int
 
-            if (framesInput.width >= framesInput.height) {
-                videoWidth = 1920
-                videoHeight = 1080
-            } else {
-                videoWidth = 1080
-                videoHeight = 1920
+            var videoWidth = 1920
+            var videoHeight = 1080
+
+            if (settings.encode4K) {
+                videoWidth *= 2
+                videoHeight *= 2
+            }
+
+            if (framesInput.width < framesInput.height) {
+                val tmp = videoWidth
+                videoWidth = videoHeight
+                videoHeight = tmp
             }
 
             var frameConsumer: FramesConsumer = VideoWriter(
@@ -320,7 +324,7 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
                 fps,
                 videoWidth,
                 videoHeight,
-                Settings.ENCODER_H265 == settings.encoder )
+                settings.h265 )
 
             if (binding.seekBarTransition.progress > 0) {
                 frameConsumer = TransitionFramesFilter( binding.seekBarTransition.progress + 1, frameConsumer )
@@ -330,7 +334,7 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
                 frameConsumer = SmoothFramesFilter( binding.seekBarSmooth.progress + 1, frameConsumer )
             }
 
-            frameConsumer = ScaleFramesFilter( videoWidth, videoHeight, frameConsumer )
+            frameConsumer = ScaleFramesFilter( settings.crop, videoWidth, videoHeight, frameConsumer )
 
             if (binding.seekBarSpeed.progress > 0) {
                 frameConsumer = SampleFramesFilter( binding.seekBarSpeed.progress + 1, frameConsumer )

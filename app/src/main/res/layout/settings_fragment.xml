@@ -17,27 +17,23 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
-                <LinearLayout
+                <Switch
+                    android:id="@+id/switchH265"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_gravity="center_vertical"
-                    android:orientation="horizontal">
+                    android:layout_height="wrap_content"
+                    android:text="H265" />
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginRight="5dp"
-                        android:text="Video encoder:" />
+                <Switch
+                    android:id="@+id/switchCrop"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Crop" />
 
-                    <Spinner
-                        android:id="@+id/videoEncoder"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:entries="@array/video_encoder"
-                        android:spinnerMode="dropdown" />
-                </LinearLayout>
-
+                <Switch
+                    android:id="@+id/switch4K"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="4K" />
             </LinearLayout>
         </ScrollView>
     </LinearLayout>
