@@ -28,8 +28,9 @@ class VideoEncoder(
         private val BITRATE_REF_H264 = Range(3000000, 6000000)
         private val BITRATE_REF_H265 = Range(BITRATE_REF_H264.start / 2, BITRATE_REF_H264.end / 2)
 
-        private fun getBitRate(refValue: Int, refRange: Range, width: Int, height: Int, fps: Int): Int {
-            val alpha = (width.toDouble() * height) / (1920.0 * 1080.0)
+        private fun getBitRate(refValue: Int, refRange: Range, width: Int, height: Int, fps_: Int): Int {
+            val fps = if (fps_ < 30) 30 else fps_
+            val alpha = (width.toDouble() * height * fps) / (1920.0 * 1080.0 * 30)
             val range = Range( (refRange.start * alpha).toInt(), (refRange.end * alpha).toInt())
 
             return when {
