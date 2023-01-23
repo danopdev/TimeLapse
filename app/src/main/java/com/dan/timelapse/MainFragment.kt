@@ -195,7 +195,6 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
             .putExtra(Intent.EXTRA_ALLOW_MULTIPLE, false)
             .putExtra(Intent.EXTRA_TITLE, "Select folder")
             .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-            .addCategory(Intent.CATEGORY_OPENABLE)
         @Suppress("DEPRECATION")
         startActivityForResult(intent, INTENT_OPEN_FOLDER)
     }
