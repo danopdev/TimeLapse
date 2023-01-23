@@ -1,6 +1,5 @@
 package com.dan.timelapse
 
-import org.opencv.core.CvType.CV_8UC3
 import org.opencv.core.Mat
 import org.opencv.core.Rect
 import org.opencv.imgproc.Imgproc.*
@@ -35,7 +34,7 @@ class ScaleFramesFilter(private val crop: Boolean, private val width: Int, priva
         }
 
         if (fullMat.empty()) {
-            fullMat = Mat.zeros(height, width, CV_8UC3)
+            fullMat = Mat.zeros(height, width, frame.type())
         }
 
         val frameToFit: Mat
@@ -43,7 +42,7 @@ class ScaleFramesFilter(private val crop: Boolean, private val width: Int, priva
             (frame.width() == width && frame.height() < height) ) {
             frameToFit = frame
         } else {
-            val scaleUp = frame.width() < width || frame.height() < height
+            val scaleUp = frame.width() < width && frame.height() < height
             val scaleAlgorithm = if (scaleUp) INTER_LANCZOS4 else INTER_AREA
 
             var newWidth = width
