@@ -60,9 +60,8 @@ Input images
 
 Crop
 
-https://user-images.githubusercontent.com/7062741/213680470-6aa47ff3-3bdf-441e-b035-b6b0e459885e.mp4
+https://user-images.githubusercontent.com/7062741/214270355-cea5f6d1-41be-4d9d-9397-bf616a3d6af3.mp4
 
 No Crop
 
-https://user-images.githubusercontent.com/7062741/213680565-9cc22183-58d9-485b-99c0-36a1046e2c43.mp4
-
+https://user-images.githubusercontent.com/7062741/214270380-ec2290fc-5a96-499f-b916-b6b287233821.mp4
