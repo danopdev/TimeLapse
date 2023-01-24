@@ -42,6 +42,18 @@ class BusyDialog( private var message: String): DialogFragment() {
             }
         }
 
+        fun updateProgress(progress: Int, total: Int) {
+            if (total <= 0 || progress < 0 || progress > total) return
+
+            runSafe {
+                currentDialog?.binding?.progressBar?.apply {
+                    this.max = total
+                    this.progress = progress
+                    this.isIndeterminate = false
+                }
+            }
+        }
+
         fun dismiss() {
             runSafe {
                 currentDialog?.dismiss()

@@ -31,6 +31,7 @@ class VideoFramesInput( private val context: Context, private val uri: Uri) : Fr
     private val _name: String
     private var _width: Int = 0
     private var _height: Int = 0
+    private var _size: Int = 0
 
     override val fps: Int
         get() = _fps
@@ -51,15 +52,19 @@ class VideoFramesInput( private val context: Context, private val uri: Uri) : Fr
             _fps = videoInput.get(CAP_PROP_FPS).toInt()
             _width = videoInput.get(CAP_PROP_FRAME_WIDTH).toInt()
             _height = videoInput.get(CAP_PROP_FRAME_HEIGHT).toInt()
+            _size = videoInput.get(CAP_PROP_FRAME_COUNT).toInt()
         }
     }
 
-    override fun forEachFrame(callback: (Mat) -> Unit) {
+    override fun forEachFrame(callback: (Int, Int, Mat) -> Unit) {
+        var counter = 0
         withVideoInput(context, uri) { videoInput ->
             val frame = Mat()
             while(videoInput.read(frame)) {
-                callback(frame)
+                callback(counter, _size, frame)
+                counter++
             }
         }
+        if (counter > _size) _size = counter
     }
 }

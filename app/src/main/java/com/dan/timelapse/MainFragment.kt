@@ -340,7 +340,10 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
             }
 
             frameConsumer.start()
-            framesInput.forEachFrame { frame -> frameConsumer.consume(frame) }
+            framesInput.forEachFrame { index, size, frame ->
+                BusyDialog.updateProgress(index, size)
+                frameConsumer.consume(frame)
+            }
             frameConsumer.stop()
 
             success = true

@@ -36,7 +36,7 @@ class ImagesFramesInput(private val context: Context, inputUris: List<Uri>) : Fr
     private val _height: Int
 
     override val fps: Int
-        get() = 5
+        get() = 30
 
     override val name: String
         get() = _name
@@ -70,9 +70,11 @@ class ImagesFramesInput(private val context: Context, inputUris: List<Uri>) : Fr
         _height = firstImage.height()
     }
 
-    override fun forEachFrame(callback: (Mat) -> Unit) {
+    override fun forEachFrame(callback: (Int, Int, Mat) -> Unit) {
+        var counter = 0
         for(uri in _uris) {
-            callback( loadImage(context, uri) )
+            callback( counter, _uris.size, loadImage(context, uri) )
+            counter++
         }
     }
 }

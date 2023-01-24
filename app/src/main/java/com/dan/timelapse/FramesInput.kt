@@ -15,5 +15,5 @@ interface FramesInput {
     val width: Int
     val height: Int
 
-    fun forEachFrame(callback: (Mat)->Unit)
+    fun forEachFrame(callback: (Int, Int, Mat)->Unit)
 }
