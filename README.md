@@ -43,9 +43,13 @@ Allow to save the current generated video to Gallery.
 
 ### Smooth
 
-Original | Smooth 10x
--- | --
-https://user-images.githubusercontent.com/7062741/214269986-4b287156-cd43-4a96-bf95-36967745e808.mp4 | https://user-images.githubusercontent.com/7062741/214269664-9f539752-fb04-49af-8795-b440b7857dba.mp4
+Original
+
+https://user-images.githubusercontent.com/7062741/214269986-4b287156-cd43-4a96-bf95-36967745e808.mp4
+
+Smooth 10x
+
+https://user-images.githubusercontent.com/7062741/214269664-9f539752-fb04-49af-8795-b440b7857dba.mp4
 
 ### Transition
 
