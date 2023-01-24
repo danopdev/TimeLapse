@@ -49,8 +49,8 @@ https://user-images.githubusercontent.com/7062741/213679622-93adda9e-bbf1-48a0-a
 
 Smooth 10x
 
-https://user-images.githubusercontent.com/7062741/213680133-d53dbd9d-dbcf-4fb3-bee8-278dbb0bfc72.mp4
- 
+https://user-images.githubusercontent.com/7062741/214269664-9f539752-fb04-49af-8795-b440b7857dba.mp4
+
 ### Transition
 
 Input images
