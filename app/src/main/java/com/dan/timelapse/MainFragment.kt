@@ -20,6 +20,9 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
         const val INTENT_OPEN_IMAGES = 3
         const val INTENT_OPEN_FOLDER = 4
 
+        const val TITLE_GENERATE = "Generate"
+        const val TITLE_SAVE = "Save"
+
         fun show(activity: MainActivity) {
             activity.pushView("TimeLapse", MainFragment(activity))
         }
@@ -239,13 +242,13 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
         videoStop()
         videoUri = null
         binding.video.setVideoURI(null)
-        runAsync("Generate") {
+        runAsync(TITLE_GENERATE) {
             generateAsync()
         }
     }
 
     private fun handleSave() {
-        runAsync("Save") {
+        runAsync(TITLE_SAVE) {
             saveAsync()
         }
     }
@@ -341,7 +344,7 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
 
             frameConsumer.start()
             framesInput.forEachFrame { index, size, frame ->
-                BusyDialog.updateProgress(index, size)
+                BusyDialog.show(TITLE_GENERATE, index, size)
                 frameConsumer.consume(frame)
             }
             frameConsumer.stop()

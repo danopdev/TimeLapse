@@ -8,7 +8,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
 import com.dan.timelapse.databinding.BusyDialogBinding
 
-class BusyDialog( private var message: String): DialogFragment() {
+class BusyDialog( private var message: String, private var progress: Int, private var total: Int): DialogFragment() {
 
     companion object {
         private const val FRAGMENT_TAG = "busy"
@@ -29,27 +29,15 @@ class BusyDialog( private var message: String): DialogFragment() {
             }
         }
 
-        fun show(message: String) {
+        fun show(message: String, progress: Int = -1, total: Int = -1) {
             runSafe {
                 if (null == currentDialog) {
-                    val dialog = BusyDialog(message)
+                    val dialog = BusyDialog(message, progress, total)
                     dialog.isCancelable = false
                     dialog.show(activity.supportFragmentManager, FRAGMENT_TAG)
                     currentDialog = dialog
                 } else {
-                    currentDialog?.binding?.textBusyMessage?.text = message
-                }
-            }
-        }
-
-        fun updateProgress(progress: Int, total: Int) {
-            if (total <= 0 || progress < 0 || progress > total) return
-
-            runSafe {
-                currentDialog?.binding?.progressBar?.apply {
-                    this.max = total
-                    this.progress = progress
-                    this.isIndeterminate = false
+                    currentDialog?.update(message, progress, total)
                 }
             }
         }
@@ -64,10 +52,34 @@ class BusyDialog( private var message: String): DialogFragment() {
 
     private var binding: BusyDialogBinding? = null
 
+    fun update(message: String, progress: Int = -1, total: Int = -1) {
+        this.message = message
+        this.progress = progress
+        this.total = total
+        update()
+    }
+
+    private fun update() {
+        val infinite = progress < 0 || total <= 0 || progress > total
+        val title = if (progress < 0) message else "$message ($progress)"
+        binding?.let {
+            it.textBusyMessage.text = title
+            if (infinite) {
+                it.progressBar.isIndeterminate = true
+            } else {
+                it.progressBar.progress = 0
+                it.progressBar.max = total
+                it.progressBar.progress = progress
+                it.progressBar.isIndeterminate = false
+            }
+        }
+    }
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val binding = BusyDialogBinding.inflate( inflater )
         binding.textBusyMessage.text = message
         this.binding = binding
+        update()
         return binding.root
     }
 }
