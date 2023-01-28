@@ -8,16 +8,16 @@ abstract class MultiFramesFilter(private val size: Int, private val notifyOnPart
     private val frames = arrayOfNulls<Mat?>(size)
     private var index = 0
 
-    abstract fun consume(oldFrame: Mat?, newFrame: Mat, allFrames: Array<Mat?>)
+    abstract fun consume(removedFrame: Mat?, lastFrame: Mat?, newFrame: Mat, allFrames: Array<Mat?>)
 
     override fun consume(frame: Mat) {
-        val oldFrame = frames[index]
+        val removedFrame = frames[index]
         val newFrame = frame.clone()
         frames[index] = newFrame
         index = (index + 1) % size
 
         if (null == frames[index] && !notifyOnPartial) return
 
-        consume(oldFrame, newFrame, frames)
+        consume(removedFrame, frames[index], newFrame, frames)
     }
 }
