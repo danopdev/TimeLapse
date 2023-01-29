@@ -333,7 +333,7 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
             }
 
             if (binding.seekBarSmooth.progress > 0) {
-                frameConsumer = SmoothFramesFilter( binding.seekBarSmooth.progress + 1, frameConsumer )
+                frameConsumer = AverageFramesFilter( binding.seekBarSmooth.progress + 1, frameConsumer )
             }
 
             frameConsumer = ScaleFramesFilter( settings.crop, videoWidth, videoHeight, frameConsumer )

@@ -5,7 +5,7 @@ import org.opencv.core.CvType.CV_16UC3
 import org.opencv.core.CvType.CV_8UC3
 import org.opencv.core.Mat
 
-class SmoothFramesFilter(private val size: Int, nextConsumer: FramesConsumer) : FramesFilter(nextConsumer) {
+class AverageFramesFilter(private val size: Int, nextConsumer: FramesConsumer) : FramesFilter(nextConsumer) {
     private val frames = mutableListOf<Mat>()
     private val outputFrame = Mat()
     private val sum = Mat()
