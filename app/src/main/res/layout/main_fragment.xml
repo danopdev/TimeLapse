@@ -100,52 +100,45 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginRight="5dp"
-                android:text="Smooth:" />
+                android:paddingTop="4dp"
+                android:text="Effect:" />
 
-            <SeekBar
-                android:id="@+id/seekBarSmooth"
-                style="@style/Widget.AppCompat.SeekBar.Discrete"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:max="19"
-                android:progress="0" />
+                android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/textSmooth"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="20x" />
-        </LinearLayout>
+                <Spinner
+                    android:id="@+id/spinnerEffect"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:entries="@array/effect"
+                    android:paddingTop="5dp"
+                    android:paddingBottom="5dp" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:orientation="horizontal"
-            android:paddingTop="5dp"
-            android:paddingBottom="5dp">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginRight="5dp"
-                android:text="Transition:" />
+                    <SeekBar
+                        android:id="@+id/seekBarEffect"
+                        style="@style/Widget.AppCompat.SeekBar.Discrete"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:max="19"
+                        android:progress="0" />
 
-            <SeekBar
-                android:id="@+id/seekBarTransition"
-                style="@style/Widget.AppCompat.SeekBar.Discrete"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:max="9"
-                android:progress="0" />
+                    <TextView
+                        android:id="@+id/textEffect"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="20x" />
+                </LinearLayout>
+            </LinearLayout>
 
-            <TextView
-                android:id="@+id/textTransition"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="10" />
         </LinearLayout>
 
         <LinearLayout

@@ -23,6 +23,9 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
         const val TITLE_GENERATE = "Generate"
         const val TITLE_SAVE = "Save"
 
+        const val EFFECT_AVERAGE = 0
+        const val EFFECT_TRANSITION = 1
+
         fun show(activity: MainActivity) {
             activity.pushView("TimeLapse", MainFragment(activity))
         }
@@ -89,8 +92,7 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
 
         binding.seekBarFPS.setOnSeekBarChangeListener(seekBarChangeListener)
         binding.seekBarSpeed.setOnSeekBarChangeListener(seekBarChangeListener)
-        binding.seekBarSmooth.setOnSeekBarChangeListener(seekBarChangeListener)
-        binding.seekBarTransition.setOnSeekBarChangeListener(seekBarChangeListener)
+        binding.seekBarEffect.setOnSeekBarChangeListener(seekBarChangeListener)
 
         binding.buttonGenerate.setOnClickListener { handleGenerate() }
 
@@ -232,8 +234,7 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
     private fun setFramesInput(framesInput: FramesInput) {
         this.framesInput = framesInput
         binding.seekBarSpeed.progress = 0
-        binding.seekBarSmooth.progress = 0
-        binding.seekBarTransition.progress = 0
+        binding.seekBarEffect.progress = 0
         binding.seekBarFPS.progress = Settings.getClosestFpsIndex(framesInput.fps)
         updateView()
     }
@@ -328,12 +329,12 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
                 videoHeight,
                 settings.h265 )
 
-            if (binding.seekBarTransition.progress > 0) {
-                frameConsumer = TransitionFramesFilter( binding.seekBarTransition.progress + 1, frameConsumer )
-            }
-
-            if (binding.seekBarSmooth.progress > 0) {
-                frameConsumer = AverageFramesFilter( binding.seekBarSmooth.progress + 1, frameConsumer )
+            val effectSize = binding.seekBarEffect.progress + 1
+            if (effectSize > 1) {
+                when(binding.spinnerEffect.selectedItemPosition) {
+                    EFFECT_AVERAGE -> frameConsumer = AverageFramesFilter( effectSize, frameConsumer )
+                    EFFECT_TRANSITION -> frameConsumer = TransitionFramesFilter( effectSize, frameConsumer )
+                }
             }
 
             frameConsumer = ScaleFramesFilter( settings.crop, videoWidth, videoHeight, frameConsumer )
@@ -386,8 +387,8 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
         val enabled = null != framesInput
         menuSave?.isEnabled = enabled
         binding.seekBarSpeed.isEnabled = enabled
-        binding.seekBarSmooth.isEnabled = enabled
-        binding.seekBarTransition.isEnabled = enabled
+        binding.seekBarEffect.isEnabled = enabled
+        binding.spinnerEffect.isEnabled = enabled
         binding.seekBarFPS.isEnabled = enabled
         binding.buttonGenerate.isEnabled = enabled
 
@@ -402,8 +403,7 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
         binding.buttonStop.isEnabled = hasVideo
 
         binding.textSpeed.text = "${binding.seekBarSpeed.progress + 1}x"
-        binding.textSmooth.text = "${binding.seekBarSmooth.progress + 1}x"
-        binding.textTransition.text = "${binding.seekBarTransition.progress + 1}"
+        binding.textEffect.text = "${binding.seekBarEffect.progress + 1}x"
         binding.textFPS.text = Settings.FPS_VALUES[binding.seekBarFPS.progress].toString()
 
         if (hasVideo) {
