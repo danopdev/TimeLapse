@@ -8,7 +8,7 @@ import org.opencv.android.Utils
 import org.opencv.core.Mat
 import java.io.FileNotFoundException
 
-class ImagesFramesInput(private val context: Context, inputUris: List<Uri>) : FramesInput {
+class ImagesFramesInput(private val context: Context, inputUris: List<Uri>) : FramesInput() {
 
     companion object {
         fun fromFolder(context: Context, folderUri: Uri): ImagesFramesInput {
@@ -68,7 +68,7 @@ class ImagesFramesInput(private val context: Context, inputUris: List<Uri>) : Fr
     init {
         if (inputUris.isEmpty()) throw FileNotFoundException()
         val sortedResult = sortUris(inputUris)
-        _name = FramesInput.fixName(sortedResult.first)
+        _name = fixName(sortedResult.first)
         _uris = sortedResult.second
 
         val firstImage = loadImage(context, _uris[0])
@@ -76,10 +76,10 @@ class ImagesFramesInput(private val context: Context, inputUris: List<Uri>) : Fr
         _height = firstImage.height()
     }
 
-    override fun forEachFrame(callback: (Int, Int, Mat) -> Unit) {
+    override fun forEachFrame(callback: (Int, Int, Mat)->Boolean) {
         var counter = 0
         for(uri in _uris) {
-            callback( counter, _uris.size, loadImage(context, uri) )
+            if (!callback( counter, _uris.size, loadImage(context, uri) )) return
             counter++
         }
     }

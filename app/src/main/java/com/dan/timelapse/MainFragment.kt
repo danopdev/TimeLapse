@@ -10,6 +10,7 @@ import android.widget.SeekBar
 import androidx.appcompat.app.AppCompatActivity
 import com.dan.timelapse.databinding.MainFragmentBinding
 import kotlinx.coroutines.*
+import org.opencv.core.Mat
 import java.io.File
 import java.io.FileNotFoundException
 
@@ -35,7 +36,8 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
     private lateinit var binding: MainFragmentBinding
     private var menuSave: MenuItem? = null
     private var framesInput: FramesInput? = null
-    private var videoUri: Uri? = null
+    private var firstFrame = Mat()
+    private val firstFrameMask = Mat()
 
     private val seekBarChangeListener = object : SeekBar.OnSeekBarChangeListener {
         override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
@@ -109,6 +111,9 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
         binding.buttonPlayOriginal.setOnClickListener { videoPlayOriginal() }
         binding.buttonPlayGenerated.setOnClickListener { videoPlayGenerated() }
         binding.buttonStop.setOnClickListener { videoStop() }
+
+        binding.switchAlign.setOnCheckedChangeListener { _, _ -> updateView()  }
+        binding.buttonAlignMask.setOnClickListener { MaskEditFragment.show( activity, firstFrame, firstFrameMask ) }
 
         cleanUp()
 
@@ -247,12 +252,14 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
         binding.seekBarSpeed.progress = 0
         binding.seekBarEffect.progress = 0
         binding.seekBarFPS.progress = Settings.getClosestFpsIndex(framesInput.fps)
+        binding.switchAlign.isEnabled = false
+        firstFrame = framesInput.firstFrame()
+        firstFrameMask.release()
         updateView()
     }
 
     private fun handleGenerate() {
         videoStop()
-        videoUri = null
         runAsync(TITLE_GENERATE, 0, framesInput?.size ?: 0) {
             generateAsync()
         }
@@ -348,6 +355,10 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
                 }
             }
 
+            if (binding.switchAlign.isChecked) {
+                frameConsumer = AlignFramesFilter(firstFrameMask, frameConsumer)
+            }
+
             frameConsumer = ScaleFramesFilter( settings.crop, videoWidth, videoHeight, frameConsumer )
 
             if (binding.seekBarSpeed.progress > 0) {
@@ -358,6 +369,7 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
             framesInput.forEachFrame { index, size, frame ->
                 BusyDialog.show(TITLE_GENERATE, index, size)
                 frameConsumer.consume(frame)
+                true
             }
             frameConsumer.stop()
 
@@ -406,6 +418,8 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
         binding.spinnerEffect.isEnabled = enabled
         binding.seekBarFPS.isEnabled = enabled
         binding.buttonGenerate.isEnabled = enabled
+        binding.switchAlign.isEnabled = enabled
+        binding.buttonAlignMask.isEnabled = enabled && binding.switchAlign.isChecked && !firstFrame.empty()
 
         if (null == framesInput) {
             binding.textInfo.text = ""

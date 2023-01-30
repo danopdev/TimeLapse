@@ -8,7 +8,7 @@ import org.opencv.videoio.VideoCapture
 import org.opencv.videoio.Videoio.*
 import java.io.FileNotFoundException
 
-class VideoFramesInput( private val context: Context, private val uri: Uri) : FramesInput {
+class VideoFramesInput( private val context: Context, private val uri: Uri) : FramesInput() {
     companion object {
         private fun open(context: Context, uri: Uri): VideoCapture {
             val pfd = context.contentResolver.openFileDescriptor(uri, "r") ?: throw FileNotFoundException()
@@ -53,7 +53,7 @@ class VideoFramesInput( private val context: Context, private val uri: Uri) : Fr
 
     init {
         val document = DocumentFile.fromSingleUri(context, uri) ?: throw FileNotFoundException()
-        _name = FramesInput.fixName(document.name)
+        _name = fixName(document.name)
         withVideoInput(context, uri) { videoInput ->
             _fps = videoInput.get(CAP_PROP_FPS).toInt()
             _width = videoInput.get(CAP_PROP_FRAME_WIDTH).toInt()
@@ -64,12 +64,12 @@ class VideoFramesInput( private val context: Context, private val uri: Uri) : Fr
         if (_size <= 0) _size = VideoTools.countFrames(context, uri)
     }
 
-    override fun forEachFrame(callback: (Int, Int, Mat) -> Unit) {
+    override fun forEachFrame(callback: (Int, Int, Mat)->Boolean) {
         var counter = 0
         withVideoInput(context, uri) { videoInput ->
             val frame = Mat()
             while(videoInput.read(frame)) {
-                callback(counter, _size, frame)
+                if (!callback(counter, _size, frame)) break
                 counter++
             }
         }

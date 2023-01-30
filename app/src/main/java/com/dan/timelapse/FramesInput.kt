@@ -3,7 +3,7 @@ package com.dan.timelapse
 import android.net.Uri
 import org.opencv.core.Mat
 
-interface FramesInput {
+abstract class FramesInput {
     companion object {
         fun fixName(original: String?): String {
             if (null == original) return "unknown"
@@ -11,12 +11,21 @@ interface FramesInput {
         }
     }
 
-    val fps: Int
-    val name: String
-    val width: Int
-    val height: Int
-    val size: Int
-    val videoUri: Uri?
+    abstract val fps: Int
+    abstract val name: String
+    abstract val width: Int
+    abstract val height: Int
+    abstract val size: Int
+    abstract val videoUri: Uri?
 
-    fun forEachFrame(callback: (Int, Int, Mat)->Unit)
+    abstract fun forEachFrame(callback: (Int, Int, Mat)->Boolean)
+
+    fun firstFrame(): Mat {
+        var firstFrame = Mat()
+        forEachFrame { _, _, frame ->
+            firstFrame = frame
+            false
+        }
+        return firstFrame
+    }
 }
