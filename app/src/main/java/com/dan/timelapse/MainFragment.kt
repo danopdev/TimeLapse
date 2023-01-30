@@ -54,13 +54,22 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
     private val tmpOutputVideo: File
         get() = File(tmpFolder, "tmp_video.mp4")
 
-    private fun videoPlay() {
+    private fun videoPlayOriginal() {
+        val videoUri = framesInput?.videoUri ?: return
+        binding.video.setVideoURI(videoUri)
+        binding.video.start()
+    }
+
+    private fun videoPlayGenerated() {
+        if (null == framesInput?.videoUri) return
+        if (!tmpOutputVideo.exists()) return
+        binding.video.setVideoURI(Uri.fromFile(tmpOutputVideo))
         binding.video.start()
     }
 
     private fun videoStop() {
         binding.video.pause()
-        binding.video.seekTo(0)
+        binding.video.setVideoURI(null)
     }
 
     private fun cleanUp() {
@@ -96,7 +105,8 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
 
         binding.buttonGenerate.setOnClickListener { handleGenerate() }
 
-        binding.buttonPlay.setOnClickListener { videoPlay() }
+        binding.buttonPlayOriginal.setOnClickListener { videoPlayOriginal() }
+        binding.buttonPlayGenerated.setOnClickListener { videoPlayGenerated() }
         binding.buttonStop.setOnClickListener { videoStop() }
 
         cleanUp()
@@ -242,7 +252,6 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
     private fun handleGenerate() {
         videoStop()
         videoUri = null
-        binding.video.setVideoURI(null)
         runAsync(TITLE_GENERATE) {
             generateAsync()
         }
@@ -398,22 +407,15 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
             binding.textInfo.text = "${framesInput.width} x ${framesInput.height}, ${framesInput.fps} FPS, ${framesInput.name}"
         }
 
-        val hasVideo = enabled && tmpOutputVideo.exists()
-        binding.buttonPlay.isEnabled = hasVideo
-        binding.buttonStop.isEnabled = hasVideo
+        val hasInputVideo = enabled && null != framesInput?.videoUri
+        val hasGeneratedVideo = hasInputVideo && tmpOutputVideo.exists()
+        binding.buttonPlayOriginal.isEnabled = hasInputVideo
+        binding.buttonPlayGenerated.isEnabled = hasGeneratedVideo
+        binding.buttonStop.isEnabled = hasInputVideo
+        binding.video.setVideoURI(null)
 
         binding.textSpeed.text = "${binding.seekBarSpeed.progress + 1}x"
         binding.textEffect.text = "${binding.seekBarEffect.progress + 1}x"
         binding.textFPS.text = Settings.FPS_VALUES[binding.seekBarFPS.progress].toString()
-
-        if (hasVideo) {
-            if (null == videoUri) {
-                videoUri = Uri.fromFile(tmpOutputVideo)
-                binding.video.setVideoURI(videoUri)
-            }
-        } else {
-            videoUri = null
-            binding.video.setVideoURI(null)
-        }
     }
 }

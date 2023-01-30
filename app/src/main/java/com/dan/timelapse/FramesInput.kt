@@ -1,5 +1,6 @@
 package com.dan.timelapse
 
+import android.net.Uri
 import org.opencv.core.Mat
 
 interface FramesInput {
@@ -14,6 +15,7 @@ interface FramesInput {
     val name: String
     val width: Int
     val height: Int
+    val videoUri: Uri?
 
     fun forEachFrame(callback: (Int, Int, Mat)->Unit)
 }

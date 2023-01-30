@@ -47,6 +47,9 @@ class ImagesFramesInput(private val context: Context, inputUris: List<Uri>) : Fr
     override val height: Int
         get() = _height
 
+    override val videoUri: Uri?
+        get() = null
+
     private fun sortUris(inputUris: List<Uri>): Pair<String, List<Uri>> {
         val urisWithNames = inputUris.map { uri ->
             val document = DocumentFile.fromSingleUri(context, uri) ?: throw FileNotFoundException()

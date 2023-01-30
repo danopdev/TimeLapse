@@ -45,6 +45,9 @@ class VideoFramesInput( private val context: Context, private val uri: Uri) : Fr
     override val height: Int
         get() = _height
 
+    override val videoUri: Uri
+        get() = uri
+
     init {
         val document = DocumentFile.fromSingleUri(context, uri) ?: throw FileNotFoundException()
         _name = FramesInput.fixName(document.name)
