@@ -252,7 +252,7 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
     private fun handleGenerate() {
         videoStop()
         videoUri = null
-        runAsync(TITLE_GENERATE) {
+        runAsync(TITLE_GENERATE, 0, framesInput?.size ?: 0) {
             generateAsync()
         }
     }
@@ -373,12 +373,12 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
         }
     }
 
-    private fun runAsync(initialMessage: String, asyncTask: () -> Unit) {
+    private fun runAsync(initialMessage: String, progress: Int, max: Int, asyncTask: () -> Unit) {
         videoStop()
 
         GlobalScope.launch(Dispatchers.Default) {
             try {
-                BusyDialog.show(initialMessage)
+                BusyDialog.show(initialMessage, progress, max)
                 asyncTask()
             } catch (e: Exception) {
                 //TODO
@@ -389,6 +389,10 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
                 BusyDialog.dismiss()
             }
         }
+    }
+
+    private fun runAsync(initialMessage: String, asyncTask: () -> Unit) {
+        runAsync(initialMessage, -1, -1, asyncTask)
     }
 
     private fun updateView() {

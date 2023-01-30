@@ -47,6 +47,9 @@ class ImagesFramesInput(private val context: Context, inputUris: List<Uri>) : Fr
     override val height: Int
         get() = _height
 
+    override val size: Int
+        get() = _uris.size
+
     override val videoUri: Uri?
         get() = null
 

@@ -15,6 +15,7 @@ interface FramesInput {
     val name: String
     val width: Int
     val height: Int
+    val size: Int
     val videoUri: Uri?
 
     fun forEachFrame(callback: (Int, Int, Mat)->Unit)

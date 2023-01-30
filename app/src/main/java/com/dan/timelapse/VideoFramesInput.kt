@@ -48,6 +48,9 @@ class VideoFramesInput( private val context: Context, private val uri: Uri) : Fr
     override val videoUri: Uri
         get() = uri
 
+    override val size: Int
+        get() = _size
+
     init {
         val document = DocumentFile.fromSingleUri(context, uri) ?: throw FileNotFoundException()
         _name = FramesInput.fixName(document.name)
@@ -57,6 +60,8 @@ class VideoFramesInput( private val context: Context, private val uri: Uri) : Fr
             _height = videoInput.get(CAP_PROP_FRAME_HEIGHT).toInt()
             _size = videoInput.get(CAP_PROP_FRAME_COUNT).toInt()
         }
+
+        if (_size <= 0) _size = VideoTools.countFrames(context, uri)
     }
 
     override fun forEachFrame(callback: (Int, Int, Mat) -> Unit) {
