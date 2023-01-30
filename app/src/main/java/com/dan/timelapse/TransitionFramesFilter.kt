@@ -12,7 +12,7 @@ class TransitionFramesFilter(private val size: Int, nextConsumer: FramesConsumer
         super.stopFilter()
     }
 
-    override fun consume(removedFrame: Mat?, lastFrame: Mat?, newFrame: Mat, allFrames: Array<Mat?>) {
+    override fun consume(removedFrame: Mat?, lastFrame: Mat?, newFrame: Mat, allFrames: Array<Mat?>, nbOfValidFrames: Int) {
         if (null != lastFrame) {
             for(step in 1 until size) {
                 val lastFrameWeight = (size - step).toDouble() / size

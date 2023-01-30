@@ -16,7 +16,7 @@ class AverageFramesFilter(private val size: Int, nextConsumer: FramesConsumer)
         super.stopFilter()
     }
 
-    override fun consume(removedFrame: Mat?, lastFrame: Mat?, newFrame: Mat, allFrames: Array<Mat?>) {
+    override fun consume(removedFrame: Mat?, lastFrame: Mat?, newFrame: Mat, allFrames: Array<Mat?>, nbOfValidFrames: Int) {
         if (sum.empty()) {
             newFrame.convertTo(sum, CV_16UC3)
         } else {
