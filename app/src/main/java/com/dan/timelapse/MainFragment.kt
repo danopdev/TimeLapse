@@ -24,7 +24,8 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
         const val TITLE_SAVE = "Save"
 
         const val EFFECT_AVERAGE = 0
-        const val EFFECT_TRANSITION = 1
+        const val EFFECT_HDR = 1
+        const val EFFECT_TRANSITION = 2
 
         fun show(activity: MainActivity) {
             activity.pushView("TimeLapse", MainFragment(activity))
@@ -342,6 +343,7 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
             if (effectSize > 1) {
                 when(binding.spinnerEffect.selectedItemPosition) {
                     EFFECT_AVERAGE -> frameConsumer = AverageFramesFilter( effectSize, frameConsumer )
+                    EFFECT_HDR -> frameConsumer = HDRFramesFilter( effectSize, frameConsumer )
                     EFFECT_TRANSITION -> frameConsumer = TransitionFramesFilter( effectSize, frameConsumer )
                 }
             }
