@@ -8,11 +8,22 @@ import org.opencv.video.Video
 class AlignFramesFilter(private val fullMask: Mat, nextConsumer: FramesConsumer)
     : FramesFilter(nextConsumer) {
 
+    companion object {
+        private const val FIX_BORDER_SCALE_FACTOR = 1.05 //to remove black borders
+    }
+
     private val firstGrayFrame = Mat()
     private val firstFramePts = MatOfPoint2f()
     private val grayFrame = Mat()
     private val alignedFrame = Mat()
+    private val alignedFrameFixed = Mat()
     private val mask = Mat()
+
+    private fun fixBorderAndNext(frame: Mat) {
+        val t = Imgproc.getRotationMatrix2D(Point(frame.width() / 2.0, frame.height() / 2.0), 0.0, FIX_BORDER_SCALE_FACTOR)
+        Imgproc.warpAffine(frame, alignedFrameFixed, t, frame.size(), Imgproc.INTER_LANCZOS4)
+        next(alignedFrameFixed)
+    }
 
     override fun consume(frame: Mat) {
         if (firstGrayFrame.empty()) {
@@ -26,7 +37,7 @@ class AlignFramesFilter(private val fullMask: Mat, nextConsumer: FramesConsumer)
             Imgproc.goodFeaturesToTrack(firstGrayFrame, pts, 200, 0.01, 30.0, mask)
 
             firstFramePts.fromList(pts.toList())
-            next(frame)
+            fixBorderAndNext(frame)
             return
         }
 
@@ -51,12 +62,12 @@ class AlignFramesFilter(private val fullMask: Mat, nextConsumer: FramesConsumer)
         val t = Calib3d.estimateAffinePartial2D(framePtsMat, firstFramePtsMat)
         if (t.empty()) {
             // failed to align
-            next(frame)
+            fixBorderAndNext(frame)
             return
         }
 
         Imgproc.warpAffine(frame, alignedFrame, t, frame.size(), Imgproc.INTER_LANCZOS4)
-        next(alignedFrame)
+        fixBorderAndNext(alignedFrame)
     }
 
     override fun startFilter() {
@@ -64,6 +75,7 @@ class AlignFramesFilter(private val fullMask: Mat, nextConsumer: FramesConsumer)
         grayFrame.release()
         firstFramePts.release()
         alignedFrame.release()
+        alignedFrameFixed.release()
         mask.release()
         super.startFilter()
     }
