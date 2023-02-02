@@ -197,30 +197,40 @@
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="2"
-                android:text="Generate"
-                android:textAllCaps="false" />
+                android:layout_weight="1"
+                android:textAllCaps="false"
+                app:icon="@android:drawable/ic_popup_sync"
+                app:iconGravity="textEnd" />
 
-            <ImageButton
+            <Button
                 android:id="@+id/buttonPlayOriginal"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
                 android:layout_weight="1"
-                app:srcCompat="@android:drawable/ic_media_previous" />
+                app:icon="@android:drawable/ic_menu_slideshow"
+                app:iconGravity="textEnd" />
 
-            <ImageButton
+            <Button
                 android:id="@+id/buttonPlayGenerated"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
                 android:layout_weight="1"
-                app:srcCompat="@android:drawable/ic_media_next" />
+                app:icon="@android:drawable/ic_media_play"
+                app:iconGravity="textEnd" />
 
-            <ImageButton
+            <Button
                 android:id="@+id/buttonStop"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
                 android:layout_weight="1"
-                app:srcCompat="@android:drawable/ic_media_pause" />
+                app:icon="@android:drawable/ic_media_pause"
+                app:iconGravity="textEnd" />
 
         </LinearLayout>
 
