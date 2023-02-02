@@ -11,7 +11,7 @@ class SampleFramesFilter(private val sample: Int, nextConsumer: FramesConsumer):
     }
 
     override fun consume(frame: Mat) {
-        if (0 == counter) nextConsumer.consume(frame)
+        if (0 == counter) next(frame)
         counter++
         if (counter >= sample) counter = 0
     }

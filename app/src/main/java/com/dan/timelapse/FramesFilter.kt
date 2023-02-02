@@ -1,8 +1,14 @@
 package com.dan.timelapse
 
-abstract class FramesFilter(val nextConsumer: FramesConsumer) : FramesConsumer {
+import org.opencv.core.Mat
+
+abstract class FramesFilter(private val nextConsumer: FramesConsumer) : FramesConsumer {
     open fun startFilter() {}
     open fun stopFilter() {}
+
+    fun next(frame: Mat) {
+        nextConsumer.consume(frame)
+    }
 
     override fun start() {
         startFilter()

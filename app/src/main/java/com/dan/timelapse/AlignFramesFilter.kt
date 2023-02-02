@@ -26,7 +26,7 @@ class AlignFramesFilter(private val fullMask: Mat, nextConsumer: FramesConsumer)
             Imgproc.goodFeaturesToTrack(firstGrayFrame, pts, 200, 0.01, 30.0, mask)
 
             firstFramePts.fromList(pts.toList())
-            nextConsumer.consume(frame)
+            next(frame)
             return
         }
 
@@ -51,12 +51,12 @@ class AlignFramesFilter(private val fullMask: Mat, nextConsumer: FramesConsumer)
         val t = Calib3d.estimateAffinePartial2D(framePtsMat, firstFramePtsMat)
         if (t.empty()) {
             // failed to align
-            nextConsumer.consume(frame)
+            next(frame)
             return
         }
 
         Imgproc.warpAffine(frame, alignedFrame, t, frame.size(), Imgproc.INTER_LANCZOS4)
-        nextConsumer.consume(alignedFrame)
+        next(alignedFrame)
     }
 
     override fun startFilter() {

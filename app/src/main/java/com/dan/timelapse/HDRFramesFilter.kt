@@ -22,7 +22,7 @@ class HDRFramesFilter(size: Int, nextConsumer: FramesConsumer)
 
             if (!hdrFrame.empty()) {
                 hdrFrame.convertTo(outputFrame, validFrames[0].type(), 255.0)
-                nextConsumer.consume(outputFrame)
+                next(outputFrame)
             }
         }
     }

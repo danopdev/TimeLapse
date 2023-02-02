@@ -17,10 +17,10 @@ class TransitionFramesFilter(private val size: Int, nextConsumer: FramesConsumer
             for(step in 1 until size) {
                 val lastFrameWeight = (size - step).toDouble() / size
                 addWeighted(lastFrame, lastFrameWeight, newFrame, 1.0 - lastFrameWeight, 0.0, outputFrame)
-                nextConsumer.consume(outputFrame)
+                next(outputFrame)
             }
         }
 
-        nextConsumer.consume(newFrame)
+        next(newFrame)
     }
 }

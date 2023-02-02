@@ -30,6 +30,6 @@ class AverageFramesFilter(private val size: Int, nextConsumer: FramesConsumer)
         if (null == lastFrame) return
 
         sum.convertTo( outputFrame, CV_8UC3, 1.0 / size )
-        nextConsumer.consume(outputFrame)
+        next(outputFrame)
     }
 }
