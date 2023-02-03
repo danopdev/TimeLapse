@@ -15,15 +15,12 @@ class HDRFramesFilter(size: Int, nextConsumer: FramesConsumer)
         super.stopFilter()
     }
 
-    override fun consume(removedFrame: Mat?, lastFrame: Mat?, newFrame: Mat, allFrames: Array<Mat?>, nbOfValidFrames: Int) {
-        val validFrames = allFrames.filterNotNull().toList()
-        if (validFrames.size >= 2) {
-            mergeMertens.process(validFrames, hdrFrame)
+    override fun consume(removedFrame: Mat?, frames: List<Mat>) {
+        mergeMertens.process(frames, hdrFrame)
 
-            if (!hdrFrame.empty()) {
-                hdrFrame.convertTo(outputFrame, validFrames[0].type(), 255.0)
-                next(outputFrame)
-            }
+        if (!hdrFrame.empty()) {
+            hdrFrame.convertTo(outputFrame, frames[0].type(), 255.0)
+            next(outputFrame)
         }
     }
 }

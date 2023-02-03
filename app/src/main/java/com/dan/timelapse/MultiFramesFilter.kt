@@ -5,21 +5,30 @@ import org.opencv.core.Mat
 abstract class MultiFramesFilter(private val size: Int, private val notifyOnPartial: Boolean, nextConsumer: FramesConsumer)
     : FramesFilter(nextConsumer) {
 
-    private val frames = arrayOfNulls<Mat?>(size)
-    private var index = 0
-    private var nbOfValidFrames = 0
+    private val frames = mutableListOf<Mat>()
 
-    abstract fun consume(removedFrame: Mat?, lastFrame: Mat?, newFrame: Mat, allFrames: Array<Mat?>, nbOfValidFrames: Int)
+    abstract fun consume(removedFrame: Mat?, frames: List<Mat>)
 
     override fun consume(frame: Mat) {
-        val removedFrame = frames[index]
-        val newFrame = frame.clone()
-        frames[index] = newFrame
-        index = (index + 1) % size
-        if (nbOfValidFrames < size) nbOfValidFrames++
+        frames.add(frame.clone())
 
-        if (null == frames[index] && !notifyOnPartial) return
+        var removedFrame: Mat? = null
 
-        consume(removedFrame, frames[index], newFrame, frames, nbOfValidFrames)
+        if (frames.size > size) {
+            removedFrame = frames.removeFirst()
+        }
+
+        if (frames.size >= size || notifyOnPartial) {
+            consume(removedFrame, frames)
+        }
+
+        removedFrame?.release() //force to free memory immediately
+    }
+
+    override fun stopFilter() {
+        frames.forEach{ frame -> frame.release() } //force to free memory immediately
+        frames.clear()
+
+        super.stopFilter()
     }
 }
