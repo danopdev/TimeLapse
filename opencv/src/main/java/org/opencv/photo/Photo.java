@@ -13,6 +13,7 @@ import org.opencv.photo.CalibrateDebevec;
 import org.opencv.photo.CalibrateRobertson;
 import org.opencv.photo.MergeDebevec;
 import org.opencv.photo.MergeMertens;
+import org.opencv.photo.MergeMertensForPipeline;
 import org.opencv.photo.MergeRobertson;
 import org.opencv.photo.Tonemap;
 import org.opencv.photo.TonemapDrago;
@@ -1323,6 +1324,15 @@ public class Photo {
 
 
     //
+    // C++:  Ptr_MergeMertensForPipeline cv::createMergeMertensForPipeline()
+    //
+
+    public static MergeMertensForPipeline createMergeMertensForPipeline() {
+        return MergeMertensForPipeline.__fromPtr__(createMergeMertensForPipeline_0());
+    }
+
+
+    //
     // C++:  Ptr_MergeRobertson cv::createMergeRobertson()
     //
 
@@ -1862,6 +1872,9 @@ public class Photo {
     private static native long createMergeMertens_1(float contrast_weight, float saturation_weight);
     private static native long createMergeMertens_2(float contrast_weight);
     private static native long createMergeMertens_3();
+
+    // C++:  Ptr_MergeMertensForPipeline cv::createMergeMertensForPipeline()
+    private static native long createMergeMertensForPipeline_0();
 
     // C++:  Ptr_MergeRobertson cv::createMergeRobertson()
     private static native long createMergeRobertson_0();

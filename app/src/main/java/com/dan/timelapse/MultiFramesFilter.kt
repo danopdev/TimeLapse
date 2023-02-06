@@ -7,22 +7,18 @@ abstract class MultiFramesFilter(private val size: Int, private val notifyOnPart
 
     private val frames = mutableListOf<Mat>()
 
-    abstract fun consume(removedFrame: Mat?, frames: List<Mat>)
+    abstract fun consume(removedFrame: Mat, frames: List<Mat>)
 
     override fun consume(frame: Mat) {
         frames.add(frame.clone())
 
-        var removedFrame: Mat? = null
-
-        if (frames.size > size) {
-            removedFrame = frames.removeFirst()
-        }
+        val removedFrame = if (frames.size > size) frames.removeFirst() else Mat()
 
         if (frames.size >= size || notifyOnPartial) {
             consume(removedFrame, frames)
         }
 
-        removedFrame?.release() //force to free memory immediately
+        removedFrame.release() //force to free memory immediately
     }
 
     override fun stopFilter() {

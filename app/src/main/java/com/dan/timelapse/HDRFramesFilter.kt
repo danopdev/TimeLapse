@@ -3,20 +3,26 @@ package com.dan.timelapse
 import org.opencv.core.Mat
 import org.opencv.photo.Photo
 
-class HDRFramesFilter(size: Int, nextConsumer: FramesConsumer)
-    : MultiFramesFilter(size, false, nextConsumer) {
+class HDRFramesFilter(private val size: Int, nextConsumer: FramesConsumer)
+    : MultiFramesFilter(size, true, nextConsumer) {
     private val hdrFrame = Mat()
     private val outputFrame = Mat()
-    private val mergeMertens = Photo.createMergeMertens()
+    private val mergeMertens = Photo.createMergeMertensForPipeline()
 
     override fun stopFilter() {
         hdrFrame.release()
         outputFrame.release()
+        mergeMertens.release()
         super.stopFilter()
     }
 
-    override fun consume(removedFrame: Mat?, frames: List<Mat>) {
-        mergeMertens.process(frames, hdrFrame)
+    override fun consume(removedFrame: Mat, frames: List<Mat>) {
+        mergeMertens.push(frames.last())
+        if (!removedFrame.empty()) mergeMertens.pop()
+
+        if (frames.size < size) return
+
+        mergeMertens.process(hdrFrame)
 
         if (!hdrFrame.empty()) {
             hdrFrame.convertTo(outputFrame, frames[0].type(), 255.0)
