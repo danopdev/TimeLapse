@@ -6,6 +6,7 @@ import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Bundle
 import android.view.*
+import android.widget.AdapterView
 import android.widget.SeekBar
 import androidx.appcompat.app.AppCompatActivity
 import com.dan.timelapse.databinding.MainFragmentBinding
@@ -50,6 +51,15 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
         override fun onStopTrackingTouch(seekBar: SeekBar?) {
         }
 
+    }
+
+    private val spinnerOnItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+        override fun onItemSelected(parent: AdapterView<*>, view: View, position: Int, id: Long) {
+            updateView()
+        }
+
+        override fun onNothingSelected(parent: AdapterView<*>) {
+        }
     }
 
     private val tmpFolder: File
@@ -114,6 +124,8 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
 
         binding.switchAlign.setOnCheckedChangeListener { _, _ -> updateView()  }
         binding.buttonAlignMask.setOnClickListener { MaskEditFragment.show( activity, firstFrame, firstFrameMask ) }
+
+        binding.spinnerEffect.onItemSelectedListener = spinnerOnItemSelectedListener
 
         cleanUp()
 
@@ -423,8 +435,8 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
         val enabled = null != framesInput
         menuSave?.isEnabled = enabled
         binding.seekBarSpeed.isEnabled = enabled
-        binding.seekBarEffect.isEnabled = enabled
         binding.spinnerEffect.isEnabled = enabled
+        binding.seekBarEffect.isEnabled = enabled && binding.spinnerEffect.selectedItemPosition > 0
         binding.seekBarFPS.isEnabled = enabled
         binding.buttonGenerate.isEnabled = enabled
         binding.switchAlign.isEnabled = enabled
