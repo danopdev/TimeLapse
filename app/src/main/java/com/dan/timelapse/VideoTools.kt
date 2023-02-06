@@ -8,7 +8,7 @@ import android.net.Uri
 class VideoTools {
     companion object {
         fun countFrames(context: Context, uri: Uri): Int {
-            var counter = 0
+            var counter = 1
 
             try {
                 val extractor = MediaExtractor()
