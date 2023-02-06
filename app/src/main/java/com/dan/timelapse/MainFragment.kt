@@ -30,10 +30,6 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
         const val EFFECT_HDR = 2
         const val EFFECT_TRANSITION = 3
 
-        const val TYPE_UNKNOWN = 0
-        const val TYPE_IMAGE = 1
-        const val TYPE_VIDEO = 2
-
         fun show(activity: MainActivity) {
             activity.pushView("TimeLapse", MainFragment(activity))
         }
@@ -44,6 +40,7 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
     private var framesInput: FramesInput? = null
     private var firstFrame = Mat()
     private val firstFrameMask = Mat()
+    private val alignCache = AlignCache()
 
     private val seekBarChangeListener = object : SeekBar.OnSeekBarChangeListener {
         override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
@@ -127,7 +124,11 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
         binding.buttonStop.setOnClickListener { videoStop() }
 
         binding.switchAlign.setOnCheckedChangeListener { _, _ -> updateView()  }
-        binding.buttonAlignMask.setOnClickListener { MaskEditFragment.show( activity, firstFrame, firstFrameMask ) }
+        binding.buttonAlignMask.setOnClickListener {
+            MaskEditFragment.show( activity, firstFrame, firstFrameMask ) {
+                alignCache.reset()
+            }
+        }
 
         binding.spinnerEffect.onItemSelectedListener = spinnerOnItemSelectedListener
 
@@ -282,11 +283,12 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
     }
 
     private fun setFramesInput(framesInput: FramesInput) {
+        alignCache.resetAll()
         this.framesInput = framesInput
-        binding.seekBarSpeed.progress = 0
-        binding.seekBarEffect.progress = 0
+        //binding.seekBarSpeed.progress = 0
+        //binding.seekBarEffect.progress = 0
         binding.seekBarFPS.progress = Settings.getClosestFpsIndex(framesInput.fps)
-        binding.switchAlign.isEnabled = false
+        //binding.switchAlign.isEnabled = false
         firstFrame = framesInput.firstFrame()
         firstFrameMask.release()
         updateView()
@@ -376,8 +378,6 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
             var frameConsumer: FramesConsumer = VideoWriter(
                 tmpOutputVideo.absolutePath,
                 fps,
-                videoWidth,
-                videoHeight,
                 settings.h265 )
 
             if (binding.spinnerEffect.selectedItemPosition > 0) {
@@ -399,7 +399,7 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
             }
 
             if (binding.switchAlign.isChecked) {
-                frameConsumer = AlignFramesFilter(firstFrameMask, frameConsumer)
+                frameConsumer = AlignFramesFilter(firstFrameMask, alignCache, frameConsumer)
             }
 
             frameConsumer = ScaleFramesFilter( settings.crop, videoWidth, videoHeight, frameConsumer )
@@ -411,7 +411,7 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
             frameConsumer.start()
             framesInput.forEachFrame { index, size, frame ->
                 BusyDialog.show(TITLE_GENERATE, index, size)
-                frameConsumer.consume(frame)
+                frameConsumer.consume(index, frame)
                 true
             }
             frameConsumer.stop()

@@ -6,8 +6,8 @@ abstract class FramesFilter(private val nextConsumer: FramesConsumer) : FramesCo
     open fun startFilter() {}
     open fun stopFilter() {}
 
-    fun next(frame: Mat) {
-        nextConsumer.consume(frame)
+    fun next(index: Int, frame: Mat) {
+        nextConsumer.consume(index, frame)
     }
 
     override fun start() {

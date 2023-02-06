@@ -5,75 +5,103 @@ import org.opencv.core.*
 import org.opencv.imgproc.Imgproc
 import org.opencv.video.Video
 
-class AlignFramesFilter(private val fullMask: Mat, nextConsumer: FramesConsumer)
+
+class AlignCache  {
+    val firstGrayFrame = Mat()
+    val firstFramePts = MatOfPoint2f()
+    val alignmentMat = mutableListOf<Mat?>()
+
+    fun resetAll() {
+        firstGrayFrame.release()
+        firstFramePts.release()
+        reset()
+    }
+
+    fun reset() {
+        for (mat in alignmentMat) mat?.release()
+        alignmentMat.clear()
+    }
+}
+
+
+class AlignFramesFilter(private val fullMask: Mat, private val cache: AlignCache, nextConsumer: FramesConsumer)
     : FramesFilter(nextConsumer) {
 
     companion object {
         private const val FIX_BORDER_SCALE_FACTOR = 1.05 //to remove black borders
+        private const val byteZero = 0.toByte()
     }
 
-    private val firstGrayFrame = Mat()
-    private val firstFramePts = MatOfPoint2f()
     private val grayFrame = Mat()
     private val alignedFrame = Mat()
     private val alignedFrameFixed = Mat()
     private val mask = Mat()
 
-    private fun fixBorderAndNext(frame: Mat) {
+    private fun fixAndNext(index: Int, frame: Mat) {
         val t = Imgproc.getRotationMatrix2D(Point(frame.width() / 2.0, frame.height() / 2.0), 0.0, FIX_BORDER_SCALE_FACTOR)
         Imgproc.warpAffine(frame, alignedFrameFixed, t, frame.size(), Imgproc.INTER_LANCZOS4)
-        next(alignedFrameFixed)
+        next(index, alignedFrameFixed)
     }
 
-    override fun consume(frame: Mat) {
-        if (firstGrayFrame.empty()) {
-            if (!fullMask.empty()) {
-                Imgproc.resize(fullMask, mask, Size(frame.width().toDouble(), frame.height().toDouble()), 0.0, 0.0, Imgproc.INTER_NEAREST )
-            }
+    override fun consume(index: Int, frame: Mat) {
+        if (!fullMask.empty()) {
+            Imgproc.resize(fullMask, mask, Size(frame.width().toDouble(), frame.height().toDouble()), 0.0, 0.0, Imgproc.INTER_NEAREST )
+        }
 
-            Imgproc.cvtColor(frame, firstGrayFrame, Imgproc.COLOR_BGR2GRAY)
+        if (cache.firstGrayFrame.empty() || frame.width() != cache.firstGrayFrame.width() || frame.height() != cache.firstGrayFrame.height()) {
+            cache.resetAll()
+
+            Imgproc.cvtColor(frame, cache.firstGrayFrame, Imgproc.COLOR_BGR2GRAY)
 
             val pts = MatOfPoint()
-            Imgproc.goodFeaturesToTrack(firstGrayFrame, pts, 200, 0.01, 30.0, mask)
+            Imgproc.goodFeaturesToTrack(cache.firstGrayFrame, pts, 200, 0.01, 30.0, mask)
+            cache.firstFramePts.fromList(pts.toList())
+        }
 
-            firstFramePts.fromList(pts.toList())
-            fixBorderAndNext(frame)
+        if (0 == index) {
+            fixAndNext(index, frame)
             return
         }
 
-        Imgproc.cvtColor(frame, grayFrame, Imgproc.COLOR_BGR2GRAY)
-        val framePts = MatOfPoint2f()
-        val status = MatOfByte()
-        val err = MatOfFloat()
-        Video.calcOpticalFlowPyrLK(firstGrayFrame, grayFrame, firstFramePts, framePts, status, err)
+        while(cache.alignmentMat.size <= index) {
+            cache.alignmentMat.add(null)
+        }
 
-        val byteZero = 0.toByte()
-        val statusList = status.toList()
-        val firstFramePtsValid = firstFramePts.toList().filterIndexed{ index, _ -> byteZero != statusList[index] }
-        val framePtsValid = framePts.toList().filterIndexed{ index, _ -> byteZero != statusList[index] }
+        var transformMat = cache.alignmentMat[index]
+        if (null == transformMat) {
+            Imgproc.cvtColor(frame, grayFrame, Imgproc.COLOR_BGR2GRAY)
+            val framePts = MatOfPoint2f()
+            val status = MatOfByte()
+            val err = MatOfFloat()
+            Video.calcOpticalFlowPyrLK(cache.firstGrayFrame, grayFrame, cache.firstFramePts, framePts, status, err)
 
-        // Find transformation matrix
-        val firstFramePtsMat = MatOfPoint2f()
-        val framePtsMat = MatOfPoint2f()
+            val statusList = status.toList()
+            val firstFramePtsValid = cache.firstFramePts.toList().filterIndexed { i, _ -> byteZero != statusList[i] }
+            val framePtsValid = framePts.toList().filterIndexed { i, _ -> byteZero != statusList[i] }
 
-        firstFramePtsMat.fromList(firstFramePtsValid)
-        framePtsMat.fromList(framePtsValid)
+            // Find transformation matrix
+            val firstFramePtsMat = MatOfPoint2f()
+            val framePtsMat = MatOfPoint2f()
 
-        val t = Calib3d.estimateAffinePartial2D(framePtsMat, firstFramePtsMat)
-        if (t.empty()) {
+            firstFramePtsMat.fromList(firstFramePtsValid)
+            framePtsMat.fromList(framePtsValid)
+
+            transformMat = Calib3d.estimateAffinePartial2D(framePtsMat, firstFramePtsMat)
+            cache.alignmentMat[index] = transformMat
+        }
+
+        if (null == transformMat || transformMat.empty()) {
             // failed to align
-            fixBorderAndNext(frame)
+            fixAndNext(index, frame)
             return
         }
 
-        Imgproc.warpAffine(frame, alignedFrame, t, frame.size(), Imgproc.INTER_LANCZOS4)
-        fixBorderAndNext(alignedFrame)
+        Imgproc.warpAffine(frame, alignedFrame, transformMat, frame.size(), Imgproc.INTER_LANCZOS4)
+        fixAndNext(index, alignedFrame)
     }
 
     override fun startFilter() {
-        firstGrayFrame.release()
         grayFrame.release()
-        firstFramePts.release()
         alignedFrame.release()
         alignedFrameFixed.release()
         mask.release()

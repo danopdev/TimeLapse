@@ -14,17 +14,17 @@ class TransitionFramesFilter(private val size: Int, nextConsumer: FramesConsumer
         super.stopFilter()
     }
 
-    override fun consume(frame: Mat) {
+    override fun consume(index: Int, frame: Mat) {
         if (!prevFrame.empty()) {
             for(step in 1 until size) {
                 val lastFrameWeight = (size - step).toDouble() / size
                 addWeighted(prevFrame, lastFrameWeight, frame, 1.0 - lastFrameWeight, 0.0, outputFrame)
-                next(outputFrame)
+                next(index, outputFrame)
             }
             prevFrame.release()
         }
 
-        next(frame)
+        next(index, frame)
         prevFrame = frame.clone()
     }
 }

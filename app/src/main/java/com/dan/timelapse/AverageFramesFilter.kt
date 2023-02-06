@@ -12,8 +12,8 @@ class AverageFramesFilter(size: Int, nextConsumer: FramesConsumer)
         super.stopFilter()
     }
 
-    override fun consumeSum(sum: Mat, frames: List<Mat>) {
+    override fun consumeSum(index: Int, sum: Mat, frames: List<Mat>) {
         sum.convertTo(outputFrame, CV_8UC3, 1.0 / frames.size)
-        next(outputFrame)
+        next(index, outputFrame)
     }
 }

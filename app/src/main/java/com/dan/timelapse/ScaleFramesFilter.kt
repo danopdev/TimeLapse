@@ -68,7 +68,7 @@ class ScaleFramesFilter(private val crop: Boolean, private val width: Int, priva
         super.stopFilter()
     }
 
-    override fun consume(frame: Mat) {
-        next(scaleFrame(frame))
+    override fun consume(index: Int, frame: Mat) {
+        next(index, scaleFrame(frame))
     }
 }

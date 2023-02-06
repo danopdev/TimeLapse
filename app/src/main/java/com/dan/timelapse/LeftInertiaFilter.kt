@@ -5,15 +5,15 @@ import org.opencv.core.Mat
 class LeftInertiaFilter(private val size: Int, nextConsumer: FramesConsumer) : FramesFilter(nextConsumer) {
     private var firstFrame = true
 
-    override fun consume(frame: Mat) {
+    override fun consume(index: Int, frame: Mat) {
         if (firstFrame) {
            firstFrame = false
-           for (index in 1 until size) {
-               next(frame)
+           for (i in 1 until size) {
+               next(index, frame)
            }
         }
 
-        next(frame)
+        next(index, frame)
     }
 
     override fun stop() {

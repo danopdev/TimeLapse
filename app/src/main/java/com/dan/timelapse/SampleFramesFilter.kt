@@ -10,8 +10,8 @@ class SampleFramesFilter(private val sample: Int, nextConsumer: FramesConsumer):
         super.startFilter()
     }
 
-    override fun consume(frame: Mat) {
-        if (0 == counter) next(frame)
+    override fun consume(index: Int, frame: Mat) {
+        if (0 == counter) next(index, frame)
         counter++
         if (counter >= sample) counter = 0
     }

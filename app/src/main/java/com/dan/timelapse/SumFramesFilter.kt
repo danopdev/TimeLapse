@@ -14,9 +14,9 @@ abstract class SumFramesFilter(private val size: Int, nextConsumer: FramesConsum
         super.stopFilter()
     }
 
-    abstract fun consumeSum(sum: Mat, frames: List<Mat>)
+    abstract fun consumeSum(index: Int, sum: Mat, frames: List<Mat>)
 
-    override fun consume(removedFrame: Mat, frames: List<Mat>) {
+    override fun consume(index: Int, removedFrame: Mat, frames: List<Mat>) {
         val newFrame = frames.last()
 
         if (sum.empty()) {
@@ -30,7 +30,7 @@ abstract class SumFramesFilter(private val size: Int, nextConsumer: FramesConsum
         }
 
         if (frames.size >= size) {
-            consumeSum(sum, frames)
+            consumeSum(index, sum, frames)
         }
     }
 }

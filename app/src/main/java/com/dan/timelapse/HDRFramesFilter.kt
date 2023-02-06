@@ -16,7 +16,7 @@ class HDRFramesFilter(private val size: Int, nextConsumer: FramesConsumer)
         super.stopFilter()
     }
 
-    override fun consume(removedFrame: Mat, frames: List<Mat>) {
+    override fun consume(index: Int, removedFrame: Mat, frames: List<Mat>) {
         mergeMertens.push(frames.last())
         if (!removedFrame.empty()) mergeMertens.pop()
 
@@ -26,7 +26,7 @@ class HDRFramesFilter(private val size: Int, nextConsumer: FramesConsumer)
 
         if (!hdrFrame.empty()) {
             hdrFrame.convertTo(outputFrame, frames[0].type(), 255.0)
-            next(outputFrame)
+            next(index, outputFrame)
         }
     }
 }
