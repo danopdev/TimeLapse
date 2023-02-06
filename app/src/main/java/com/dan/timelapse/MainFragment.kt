@@ -449,7 +449,7 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
         }
 
         val hasInputVideo = enabled && null != framesInput?.videoUri
-        val hasGeneratedVideo = hasInputVideo && tmpOutputVideo.exists()
+        val hasGeneratedVideo = enabled && tmpOutputVideo.exists()
         binding.buttonPlayOriginal.isEnabled = hasInputVideo
         binding.buttonPlayGenerated.isEnabled = hasGeneratedVideo
         binding.buttonStop.isEnabled = hasInputVideo
