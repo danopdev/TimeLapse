@@ -9,6 +9,7 @@ import android.view.*
 import android.widget.AdapterView
 import android.widget.SeekBar
 import androidx.appcompat.app.AppCompatActivity
+import androidx.documentfile.provider.DocumentFile
 import com.dan.timelapse.databinding.MainFragmentBinding
 import kotlinx.coroutines.*
 import org.opencv.core.Mat
@@ -28,6 +29,10 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
         const val EFFECT_AVERAGE = 1
         const val EFFECT_HDR = 2
         const val EFFECT_TRANSITION = 3
+
+        const val TYPE_UNKNOWN = 0
+        const val TYPE_IMAGE = 1
+        const val TYPE_VIDEO = 2
 
         fun show(activity: MainActivity) {
             activity.pushView("TimeLapse", MainFragment(activity))
@@ -74,7 +79,6 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
     }
 
     private fun videoPlayGenerated() {
-        if (null == framesInput?.videoUri) return
         if (!tmpOutputVideo.exists()) return
         binding.video.setVideoURI(Uri.fromFile(tmpOutputVideo))
         binding.video.start()
@@ -131,6 +135,8 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
 
         setHasOptionsMenu(true)
 
+        openIntent(activity.intent)
+
         return binding.root
     }
 
@@ -166,32 +172,48 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
         return super.onOptionsItemSelected(item)
     }
 
+    private fun openIntent(intent: Intent?) {
+        if (null == intent) return
+
+        val context = requireContext()
+        val uri = intent.data
+
+        if (null != uri) {
+            val mimeType = DocumentFile.fromSingleUri(context, uri)?.type
+            if (null != mimeType && mimeType.startsWith("video/")) {
+                openVideoFile(uri)
+                return
+            }
+
+            val document = DocumentFile.fromTreeUri(context, uri) ?: return
+            if (document.isDirectory) {
+                openImageFolder(uri)
+            }
+
+            return
+        }
+
+        intent.clipData?.let { clipData ->
+            if (clipData.itemCount > 0) {
+                val uriList = mutableListOf<Uri>()
+                for (i in 0 until clipData.itemCount) {
+                    uriList.add(clipData.getItemAt(i).uri)
+                }
+
+                if (clipData.description.hasMimeType("video/*")) {
+                    openVideoFile(uriList[0])
+                } else if (clipData.description.hasMimeType("image/*")) {
+                    openImagesFiles(uriList)
+                }
+            }
+        }
+    }
+
     @Deprecated("Deprecated in Java")
     override fun onActivityResult(requestCode: Int, resultCode: Int, intent: Intent?) {
         if (AppCompatActivity.RESULT_OK == resultCode) {
-            when (requestCode) {
-                INTENT_OPEN_VIDEO -> {
-                    intent?.data?.let { uri -> openVideoFile(uri) }
-                    return
-                }
-
-                INTENT_OPEN_IMAGES -> {
-                    intent?.clipData?.let { clipData ->
-                        val uriList = mutableListOf<Uri>()
-                        val count = clipData.itemCount
-                        for (i in 0 until count) {
-                            uriList.add(clipData.getItemAt(i).uri)
-                        }
-                        openImagesFiles(uriList.toList())
-                    }
-                    return
-                }
-
-                INTENT_OPEN_FOLDER -> {
-                    intent?.data?.let { uri -> openImageFolder(uri) }
-                    return
-                }
-            }
+            openIntent(intent)
+            return
         }
 
         @Suppress("DEPRECATION")
