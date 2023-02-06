@@ -24,9 +24,9 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
         const val TITLE_GENERATE = "Generate"
         const val TITLE_SAVE = "Save"
 
-        const val EFFECT_AVERAGE = 0
-        const val EFFECT_HDR = 1
-        const val EFFECT_TRANSITION = 2
+        const val EFFECT_AVERAGE = 1
+        const val EFFECT_HDR = 2
+        const val EFFECT_TRANSITION = 3
 
         fun show(activity: MainActivity) {
             activity.pushView("TimeLapse", MainFragment(activity))
@@ -346,12 +346,13 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
                 videoHeight,
                 settings.h265 )
 
-            val effectSize = binding.seekBarEffect.progress + 1
-            if (effectSize > 1) {
-                when(binding.spinnerEffect.selectedItemPosition) {
-                    EFFECT_AVERAGE -> frameConsumer = AverageFramesFilter( effectSize, frameConsumer )
-                    EFFECT_HDR -> frameConsumer = HDRFramesFilter( effectSize, frameConsumer )
-                    EFFECT_TRANSITION -> frameConsumer = TransitionFramesFilter( effectSize, frameConsumer )
+            if (binding.spinnerEffect.selectedItemPosition > 0) {
+                val effectSize = binding.seekBarEffect.progress + 2
+                when (binding.spinnerEffect.selectedItemPosition) {
+                    EFFECT_AVERAGE -> frameConsumer = AverageFramesFilter(effectSize, frameConsumer)
+                    EFFECT_HDR -> frameConsumer = HDRFramesFilter(effectSize, frameConsumer)
+                    EFFECT_TRANSITION -> frameConsumer =
+                        TransitionFramesFilter(effectSize, frameConsumer)
                 }
 
                 if (binding.switchLeftInertia.isChecked) {
@@ -443,7 +444,7 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
         binding.video.setVideoURI(null)
 
         binding.textSpeed.text = "${binding.seekBarSpeed.progress + 1}x"
-        binding.textEffect.text = "${binding.seekBarEffect.progress + 1}x"
+        binding.textEffect.text = "${binding.seekBarEffect.progress + 2}x"
         binding.textFPS.text = Settings.FPS_VALUES[binding.seekBarFPS.progress].toString()
     }
 }

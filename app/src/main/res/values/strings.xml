@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">TimeLapse</string>
     <string-array name="effect">
+        <item>None</item>
         <item>Average</item>
         <item>HDR</item>
         <item>Transition</item>
