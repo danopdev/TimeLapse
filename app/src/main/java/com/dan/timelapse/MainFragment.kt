@@ -152,10 +152,6 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
     ): View {
         binding = MainFragmentBinding.inflate(inflater)
 
-        binding.buttonOpenVideo.setOnClickListener { handleOpenVideo() }
-        binding.buttonOpenImageFiles.setOnClickListener { handleOpenFiles() }
-        binding.buttonOpenImageFolder.setOnClickListener { handleOpenFolder() }
-
         binding.video.setAudioFocusRequest(AudioManager.AUDIOFOCUS_NONE)
         binding.video.setOnPreparedListener { newMediaPlayer ->
             newMediaPlayer.setVolume(0.0f, 0.0f)
@@ -204,6 +200,20 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when(item.itemId) {
+            R.id.menuOpenVideo -> {
+                handleOpenVideo()
+                return true
+            }
+
+            R.id.menuOpenPhotos -> {
+                handleOpenFiles()
+                return true
+            }
+
+            R.id.menuOpenFolder -> {
+                handleOpenFolder()
+                return true
+            }
 
             R.id.menuSave -> {
                 handleSave()

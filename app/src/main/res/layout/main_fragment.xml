@@ -19,41 +19,6 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <Button
-                android:id="@+id/buttonOpenVideo"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Open Video"
-                android:textAllCaps="false" />
-
-            <Button
-                android:id="@+id/buttonOpenImageFiles"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="16dp"
-                android:layout_weight="1"
-                android:text="Open Images"
-                android:textAllCaps="false" />
-
-            <Button
-                android:id="@+id/buttonOpenImageFolder"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="16dp"
-                android:layout_weight="1"
-                android:text="Open Folder"
-                android:textAllCaps="false" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
             android:orientation="horizontal"
             android:paddingTop="10dp"
