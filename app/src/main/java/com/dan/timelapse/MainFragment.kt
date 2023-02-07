@@ -388,14 +388,6 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
                     EFFECT_TRANSITION -> frameConsumer =
                         TransitionFramesFilter(effectSize, frameConsumer)
                 }
-
-                if (binding.switchLeftInertia.isChecked) {
-                    frameConsumer = LeftInertiaFilter(effectSize, frameConsumer)
-                }
-
-                if (binding.switchRightInertia.isChecked) {
-                    frameConsumer = RightInertiaFilter(effectSize, frameConsumer)
-                }
             }
 
             if (binding.switchAlign.isChecked) {
