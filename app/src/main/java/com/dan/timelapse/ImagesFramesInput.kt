@@ -6,6 +6,8 @@ import android.net.Uri
 import androidx.documentfile.provider.DocumentFile
 import org.opencv.android.Utils
 import org.opencv.core.Mat
+import org.opencv.imgproc.Imgproc.COLOR_RGBA2RGB
+import org.opencv.imgproc.Imgproc.cvtColor
 import java.io.FileNotFoundException
 
 class ImagesFramesInput(private val context: Context, inputUris: List<Uri>) : FramesInput() {
@@ -19,14 +21,15 @@ class ImagesFramesInput(private val context: Context, inputUris: List<Uri>) : Fr
             return ImagesFramesInput(context, files)
         }
 
-        private fun loadImage(context: Context, uri: Uri): Mat {
+        private fun loadImage(context: Context, uri: Uri, frame: Mat) {
             val inputStream = context.contentResolver.openInputStream(uri) ?: throw FileNotFoundException()
             val bitmap = BitmapFactory.decodeStream(inputStream)
             inputStream.close()
             if (null == bitmap) throw FileNotFoundException()
             val image = Mat()
             Utils.bitmapToMat(bitmap, image)
-            return image
+            cvtColor(image, frame, COLOR_RGBA2RGB)
+            image.release()
         }
     }
 
@@ -71,16 +74,21 @@ class ImagesFramesInput(private val context: Context, inputUris: List<Uri>) : Fr
         _name = fixName(sortedResult.first)
         _uris = sortedResult.second
 
-        val firstImage = loadImage(context, _uris[0])
+        val firstImage = Mat()
+        loadImage(context, _uris[0], firstImage)
         _width = firstImage.width()
         _height = firstImage.height()
+        firstImage.release()
     }
 
     override fun forEachFrame(callback: (Int, Int, Mat)->Boolean) {
         var counter = 0
+        val frame = Mat()
         for(uri in _uris) {
-            if (!callback( counter, _uris.size, loadImage(context, uri) )) return
+            loadImage(context, uri, frame)
+            if (!callback( counter, _uris.size, frame )) break
             counter++
         }
+        frame.release()
     }
 }
