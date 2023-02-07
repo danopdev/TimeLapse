@@ -400,7 +400,7 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
     }
 
     private fun generateAsync(outputParams: OutputParams) {
-        this.outputParams = outputParams
+        this.outputParams = null
         val framesInput = this.framesInput ?: return
         var success = false
 
@@ -433,8 +433,7 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
                 when (binding.spinnerEffect.selectedItemPosition) {
                     EFFECT_AVERAGE -> frameConsumer = AverageFramesFilter(effectSize, frameConsumer)
                     EFFECT_HDR -> frameConsumer = HDRFramesFilter(effectSize, frameConsumer)
-                    EFFECT_TRANSITION -> frameConsumer =
-                        TransitionFramesFilter(effectSize, frameConsumer)
+                    EFFECT_TRANSITION -> frameConsumer = TransitionFramesFilter(effectSize, frameConsumer)
                 }
             }
 
