@@ -197,21 +197,10 @@
             android:orientation="horizontal">
 
             <Button
-                android:id="@+id/buttonGenerate"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:textAllCaps="false"
-                app:icon="@android:drawable/ic_popup_sync"
-                app:iconGravity="textEnd" />
-
-            <Button
                 android:id="@+id/buttonPlayOriginal"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="10dp"
                 android:layout_weight="1"
                 app:icon="@android:drawable/ic_menu_slideshow"
                 app:iconGravity="textEnd" />

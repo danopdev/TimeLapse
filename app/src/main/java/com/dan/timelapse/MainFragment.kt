@@ -26,6 +26,7 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
         const val TITLE_GENERATE = "Generate"
         const val TITLE_SAVE = "Save"
 
+        const val EFFECT_NONE = 0
         const val EFFECT_AVERAGE = 1
         const val EFFECT_HDR = 2
         const val EFFECT_TRANSITION = 3
@@ -41,6 +42,8 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
     private var firstFrame = Mat()
     private val firstFrameMask = Mat()
     private val alignCache = AlignCache()
+    private var outputParams: OutputParams? = null
+    private var alignMaskId = 0
 
     private val seekBarChangeListener = object : SeekBar.OnSeekBarChangeListener {
         override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
@@ -70,13 +73,58 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
         get() = File(tmpFolder, "tmp_video.mp4")
 
     private fun videoPlayOriginal() {
+        videoStop()
         val videoUri = framesInput?.videoUri ?: return
         binding.video.setVideoURI(videoUri)
         binding.video.start()
     }
 
-    private fun videoPlayGenerated() {
-        if (!tmpOutputVideo.exists()) return
+    private fun getCurrentOutputParams(): OutputParams {
+        val outputParams = OutputParams()
+
+        outputParams.set(OutputParams.KEY_SPEED, binding.seekBarSpeed.progress + 1)
+        outputParams.set(OutputParams.KEY_ALIGN, if (binding.switchAlign.isChecked) alignMaskId else -1)
+
+        val effect = binding.spinnerEffect.selectedItemPosition
+        outputParams.set(OutputParams.KEY_EFFECT, effect)
+        outputParams.set(OutputParams.KEY_EFFECT_SIZE, if (EFFECT_NONE == effect) 0 else binding.seekBarEffect.progress + 2)
+
+        val fps = Settings.FPS_VALUES[binding.seekBarFPS.progress]
+        outputParams.set(OutputParams.KEY_FPS, fps)
+
+        return outputParams
+    }
+
+    private fun stabChangeFpsAsync(outputParams: OutputParams) {
+        this.outputParams = null
+        VideoTools.changeFps(tmpOutputVideo.absolutePath, outputParams.get(OutputParams.KEY_FPS))
+        if (tmpOutputVideo.exists()) this.outputParams = outputParams
+    }
+
+    private fun changeFps(outputParams: OutputParams) {
+        runAsync(TITLE_GENERATE, -1, true) {
+            stabChangeFpsAsync(outputParams)
+        }
+    }
+
+    private fun videoPlayGenerated(generateIfNeeded: Boolean) {
+        videoStop()
+
+        val outputParams = getCurrentOutputParams()
+        val changes = outputParams.compareWith(this.outputParams)
+
+        if (!tmpOutputVideo.exists() || OutputParams.COMPARE_NOT_CHANGED != changes) {
+            if (generateIfNeeded) {
+                if (OutputParams.COMPARE_CHANGED_ONLY_FPS == changes) {
+                    changeFps(outputParams)
+                } else {
+                    handleGenerate(outputParams)
+                }
+            }
+
+            return
+        }
+
         binding.video.setVideoURI(Uri.fromFile(tmpOutputVideo))
         binding.video.start()
     }
@@ -116,16 +164,14 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
         binding.seekBarFPS.setOnSeekBarChangeListener(seekBarChangeListener)
         binding.seekBarSpeed.setOnSeekBarChangeListener(seekBarChangeListener)
         binding.seekBarEffect.setOnSeekBarChangeListener(seekBarChangeListener)
-
-        binding.buttonGenerate.setOnClickListener { handleGenerate() }
-
         binding.buttonPlayOriginal.setOnClickListener { videoPlayOriginal() }
-        binding.buttonPlayGenerated.setOnClickListener { videoPlayGenerated() }
+        binding.buttonPlayGenerated.setOnClickListener { videoPlayGenerated(true) }
         binding.buttonStop.setOnClickListener { videoStop() }
 
         binding.switchAlign.setOnCheckedChangeListener { _, _ -> updateView()  }
         binding.buttonAlignMask.setOnClickListener {
             MaskEditFragment.show( activity, firstFrame, firstFrameMask ) {
+                alignMaskId++
                 alignCache.reset()
             }
         }
@@ -283,6 +329,7 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
     }
 
     private fun setFramesInput(framesInput: FramesInput) {
+        outputParams = null
         alignCache.resetAll()
         this.framesInput = framesInput
         //binding.seekBarSpeed.progress = 0
@@ -294,14 +341,14 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
         updateView()
     }
 
-    private fun handleGenerate() {
-        videoStop()
-        runAsync(TITLE_GENERATE, 0, framesInput?.size ?: 0) {
-            generateAsync()
+    private fun handleGenerate(outputParams: OutputParams) {
+        runAsync(TITLE_GENERATE, 0, true) {
+            generateAsync(outputParams)
         }
     }
 
     private fun handleSave() {
+        videoStop()
         runAsync(TITLE_SAVE) {
             saveAsync()
         }
@@ -352,7 +399,8 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
         return outputFile
     }
 
-    private fun generateAsync() {
+    private fun generateAsync(outputParams: OutputParams) {
+        this.outputParams = outputParams
         val framesInput = this.framesInput ?: return
         var success = false
 
@@ -408,6 +456,7 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
             }
             frameConsumer.stop()
 
+            this.outputParams = outputParams
             success = true
         } catch (e: Exception) {
             e.printStackTrace()
@@ -422,37 +471,36 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
         }
     }
 
-    private fun runAsync(initialMessage: String, progress: Int, max: Int, asyncTask: () -> Unit) {
+    private fun runAsync(initialMessage: String, progress: Int, playOnFinish: Boolean, asyncTask: () -> Unit) {
         videoStop()
 
         GlobalScope.launch(Dispatchers.Default) {
             try {
-                BusyDialog.show(initialMessage, progress, max)
+                BusyDialog.show(initialMessage, progress, framesInput?.size ?: -1)
                 asyncTask()
             } catch (e: Exception) {
-                //TODO
+                e.printStackTrace()
             }
 
             runOnUiThread {
                 updateView()
                 BusyDialog.dismiss()
+                if (playOnFinish) videoPlayGenerated(false)
             }
         }
     }
 
     private fun runAsync(initialMessage: String, asyncTask: () -> Unit) {
-        runAsync(initialMessage, -1, -1, asyncTask)
+        runAsync(initialMessage, -1, false, asyncTask)
     }
 
     private fun updateView() {
         val framesInput = this.framesInput
         val enabled = null != framesInput
-        menuSave?.isEnabled = enabled
         binding.seekBarSpeed.isEnabled = enabled
         binding.spinnerEffect.isEnabled = enabled
         binding.seekBarEffect.isEnabled = enabled && binding.spinnerEffect.selectedItemPosition > 0
         binding.seekBarFPS.isEnabled = enabled
-        binding.buttonGenerate.isEnabled = enabled
         binding.switchAlign.isEnabled = enabled
         binding.buttonAlignMask.isEnabled = enabled && binding.switchAlign.isChecked && !firstFrame.empty()
 
@@ -464,9 +512,10 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
 
         val hasInputVideo = enabled && null != framesInput?.videoUri
         val hasGeneratedVideo = enabled && tmpOutputVideo.exists()
+        menuSave?.isEnabled = hasGeneratedVideo
         binding.buttonPlayOriginal.isEnabled = hasInputVideo
-        binding.buttonPlayGenerated.isEnabled = hasGeneratedVideo
-        binding.buttonStop.isEnabled = hasInputVideo
+        binding.buttonPlayGenerated.isEnabled = enabled
+        binding.buttonStop.isEnabled = enabled
         binding.video.setVideoURI(null)
 
         binding.textSpeed.text = "${binding.seekBarSpeed.progress + 1}x"
