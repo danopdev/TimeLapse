@@ -50,6 +50,8 @@ class VideoEncoder(
             format.setInteger(MediaFormat.KEY_BIT_RATE, bitRate)
             format.setInteger(MediaFormat.KEY_FRAME_RATE, fps)
             format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 5)
+            format.setInteger(MediaFormat.KEY_COLOR_RANGE, MediaFormat.COLOR_RANGE_FULL)
+            format.setInteger(MediaFormat.KEY_COLOR_STANDARD, MediaFormat.COLOR_STANDARD_BT709)
 
             val encoder = MediaCodec.createEncoderByType(mimeType)
             encoder.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
