@@ -457,16 +457,24 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
                 frameConsumer = SampleFramesFilter( binding.seekBarSpeed.progress + 1, frameConsumer )
             }
 
+            BusyDialog.showCancel()
             frameConsumer.start()
             framesInput.forEachFrame { index, size, frame ->
                 BusyDialog.show(TITLE_GENERATE, index, size)
-                frameConsumer.consume(index, frame)
-                true
+
+                if (BusyDialog.isCanceled()) {
+                    false
+                } else {
+                    frameConsumer.consume(index, frame)
+                    true
+                }
             }
             frameConsumer.stop()
 
-            this.outputParams = outputParams
-            success = true
+            if (!BusyDialog.isCanceled()) {
+                this.outputParams = outputParams
+                success = true
+            }
         } catch (e: Exception) {
             e.printStackTrace()
         }

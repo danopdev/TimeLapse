@@ -48,9 +48,28 @@ class BusyDialog( private var message: String, private var progress: Int, privat
                 currentDialog = null
             }
         }
+
+        fun showCancel() {
+            runSafe {
+                currentDialog?.showCancel()
+            }
+        }
+
+        fun isCanceled(): Boolean {
+            return currentDialog?._isCanceled ?: false
+        }
     }
 
-    private var binding: BusyDialogBinding? = null
+    private var _binding: BusyDialogBinding? = null
+    private var _isCanceled = false
+    private var _showCancel = false
+
+    fun showCancel() {
+        _showCancel = true
+        _binding?.let {
+            it.buttonCancel.visibility = View.VISIBLE
+        }
+    }
 
     fun update(message: String, progress: Int = -1, total: Int = -1) {
         this.message = message
@@ -62,7 +81,7 @@ class BusyDialog( private var message: String, private var progress: Int, privat
     private fun update() {
         val infinite = progress < 0 || total <= 0 || progress > total
         val title = if (progress < 0) message else "$message ($progress)"
-        binding?.let {
+        _binding?.let {
             it.textBusyMessage.text = title
             if (infinite) {
                 it.progressBar.isIndeterminate = true
@@ -78,7 +97,17 @@ class BusyDialog( private var message: String, private var progress: Int, privat
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val binding = BusyDialogBinding.inflate( inflater )
         binding.textBusyMessage.text = message
-        this.binding = binding
+        this._binding = binding
+
+        binding.buttonCancel.setOnClickListener {
+            _isCanceled = true
+            binding.buttonCancel.isEnabled = false
+        }
+
+        if (_showCancel) {
+            binding.buttonCancel.visibility = View.VISIBLE
+        }
+
         update()
         return binding.root
     }
