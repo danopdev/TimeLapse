@@ -15,6 +15,7 @@ import kotlinx.coroutines.*
 import org.opencv.core.Mat
 import java.io.File
 import java.io.FileNotFoundException
+import java.lang.Integer.min
 
 
 class MainFragment(activity: MainActivity) : AppFragment(activity) {
@@ -91,6 +92,8 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
         outputParams.set(OutputParams.KEY_EFFECT, effect)
         outputParams.set(OutputParams.KEY_EFFECT_SIZE, if (effectsWithoutSize.contains(effect)) 0 else binding.seekBarEffect.progress + 2)
 
+        outputParams.set(OutputParams.KEY_DURATION, binding.seekBarDuration.progress)
+
         val fps = Settings.FPS_VALUES[binding.seekBarFPS.progress]
         outputParams.set(OutputParams.KEY_FPS, fps)
 
@@ -162,6 +165,7 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
         binding.seekBarFPS.setOnSeekBarChangeListener(seekBarChangeListener)
         binding.seekBarSpeed.setOnSeekBarChangeListener(seekBarChangeListener)
         binding.seekBarEffect.setOnSeekBarChangeListener(seekBarChangeListener)
+        binding.seekBarDuration.setOnSeekBarChangeListener(seekBarChangeListener)
         binding.buttonPlayOriginal.setOnClickListener { videoPlayOriginal() }
         binding.buttonPlayGenerated.setOnClickListener { videoPlayGenerated(true) }
         binding.buttonStop.setOnClickListener { videoStop() }
@@ -459,18 +463,24 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
                 frameConsumer = SampleFramesFilter( binding.seekBarSpeed.progress + 1, frameConsumer )
             }
 
+            val maxFrames = binding.seekBarDuration.progress * framesInput.fps
+
             BusyDialog.showCancel()
             frameConsumer.start()
-            framesInput.forEachFrame { index, size, frame ->
+            framesInput.forEachFrame { index, size_, frame ->
+                val size = if (0 == maxFrames) size_ else min(size_, maxFrames)
                 BusyDialog.show(TITLE_GENERATE, index, size)
 
                 if (BusyDialog.isCanceled()) {
                     false
-                } else {
+                } else if (maxFrames > 0 && index >= maxFrames) {
+                    false
+                }
+                else {
                     frameConsumer.consume(index, frame)
                     true
                 }
-            }
+        }
             frameConsumer.stop()
 
             if (!BusyDialog.isCanceled()) {
@@ -520,6 +530,7 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
         binding.spinnerEffect.isEnabled = enabled
         binding.seekBarEffect.isEnabled = enabled && !effectsWithoutSize.contains(binding.spinnerEffect.selectedItemPosition)
         binding.seekBarFPS.isEnabled = enabled
+        binding.seekBarDuration.isEnabled = enabled
         binding.switchAlign.isEnabled = enabled
         binding.buttonAlignMask.isEnabled = enabled && binding.switchAlign.isChecked && !firstFrame.empty()
 
@@ -540,5 +551,6 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
         binding.textSpeed.text = "${binding.seekBarSpeed.progress + 1}x"
         binding.textEffect.text = "${binding.seekBarEffect.progress + 2}x"
         binding.textFPS.text = Settings.FPS_VALUES[binding.seekBarFPS.progress].toString()
+        binding.textDuration.text = if (0 == binding.seekBarDuration.progress) "all" else "${binding.seekBarDuration.progress} s"
     }
 }

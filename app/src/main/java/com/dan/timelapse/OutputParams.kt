@@ -13,6 +13,7 @@ class OutputParams {
         const val KEY_ALIGN = "ALIGN"
         const val KEY_EFFECT = "EFFECT"
         const val KEY_EFFECT_SIZE = "EFFECT-SIZE"
+        const val KEY_DURATION = "DURATION"
 
         private fun compare(a: Map<String, Int>, b: Map<String, Int>): Int {
             var fpsChanged = false
