@@ -31,6 +31,8 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
         const val EFFECT_HDR = 2
         const val EFFECT_TRANSITION = 3
 
+        val effectsWithoutSize = setOf(EFFECT_NONE)
+
         fun show(activity: MainActivity) {
             activity.pushView("TimeLapse", MainFragment(activity))
         }
@@ -87,7 +89,7 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
 
         val effect = binding.spinnerEffect.selectedItemPosition
         outputParams.set(OutputParams.KEY_EFFECT, effect)
-        outputParams.set(OutputParams.KEY_EFFECT_SIZE, if (EFFECT_NONE == effect) 0 else binding.seekBarEffect.progress + 2)
+        outputParams.set(OutputParams.KEY_EFFECT_SIZE, if (effectsWithoutSize.contains(effect)) 0 else binding.seekBarEffect.progress + 2)
 
         val fps = Settings.FPS_VALUES[binding.seekBarFPS.progress]
         outputParams.set(OutputParams.KEY_FPS, fps)
@@ -516,7 +518,7 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
         val enabled = null != framesInput
         binding.seekBarSpeed.isEnabled = enabled
         binding.spinnerEffect.isEnabled = enabled
-        binding.seekBarEffect.isEnabled = enabled && binding.spinnerEffect.selectedItemPosition > 0
+        binding.seekBarEffect.isEnabled = enabled && !effectsWithoutSize.contains(binding.spinnerEffect.selectedItemPosition)
         binding.seekBarFPS.isEnabled = enabled
         binding.switchAlign.isEnabled = enabled
         binding.buttonAlignMask.isEnabled = enabled && binding.switchAlign.isChecked && !firstFrame.empty()
