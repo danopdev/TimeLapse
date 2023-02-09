@@ -19,19 +19,19 @@ import java.io.FileNotFoundException
 
 class MainFragment(activity: MainActivity) : AppFragment(activity) {
     companion object {
-        const val INTENT_OPEN_VIDEO = 2
-        const val INTENT_OPEN_IMAGES = 3
-        const val INTENT_OPEN_FOLDER = 4
+        private const val INTENT_OPEN_VIDEO = 2
+        private const val INTENT_OPEN_IMAGES = 3
+        private const val INTENT_OPEN_FOLDER = 4
 
-        const val TITLE_GENERATE = "Generate"
-        const val TITLE_SAVE = "Save"
+        private const val TITLE_GENERATE = "Generate"
+        private const val TITLE_SAVE = "Save"
 
-        const val EFFECT_NONE = 0
-        const val EFFECT_AVERAGE = 1
-        const val EFFECT_HDR = 2
-        const val EFFECT_TRANSITION = 3
+        private const val EFFECT_NONE = 0
+        private const val EFFECT_AVERAGE = 1
+        private const val EFFECT_HDR = 2
+        private const val EFFECT_TRANSITION = 3
 
-        val effectsWithoutSize = setOf(EFFECT_NONE)
+        private val effectsWithoutSize = setOf(EFFECT_NONE)
 
         fun show(activity: MainActivity) {
             activity.pushView("TimeLapse", MainFragment(activity))
