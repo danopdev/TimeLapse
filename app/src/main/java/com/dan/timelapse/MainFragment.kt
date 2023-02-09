@@ -27,12 +27,18 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
         private const val TITLE_GENERATE = "Generate"
         private const val TITLE_SAVE = "Save"
 
-        private const val EFFECT_NONE = 0
-        private const val EFFECT_AVERAGE = 1
-        private const val EFFECT_HDR = 2
-        private const val EFFECT_TRANSITION = 3
+        enum class Effect {
+            NONE,
+            AVERAGE,
+            ENDLESS_AVERAGE,
+            HDR,
+            TRANSITION
+        }
 
-        private val effectsWithoutSize = setOf(EFFECT_NONE)
+        private val effectsWithoutSize = setOf(
+            Effect.NONE,
+            Effect.ENDLESS_AVERAGE
+        )
 
         fun show(activity: MainActivity) {
             activity.pushView("TimeLapse", MainFragment(activity))
@@ -75,6 +81,9 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
     private val tmpOutputVideo: File
         get() = File(tmpFolder, "tmp_video.mp4")
 
+    private val currentEffect: Effect
+        get() = Effect.values().first { it.ordinal == binding.spinnerEffect.selectedItemPosition }
+
     private fun videoPlayOriginal() {
         videoStop()
         val videoUri = framesInput?.videoUri ?: return
@@ -88,8 +97,8 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
         outputParams.set(OutputParams.KEY_SPEED, binding.seekBarSpeed.progress + 1)
         outputParams.set(OutputParams.KEY_ALIGN, if (binding.switchAlign.isChecked) alignMaskId else -1)
 
-        val effect = binding.spinnerEffect.selectedItemPosition
-        outputParams.set(OutputParams.KEY_EFFECT, effect)
+        val effect = currentEffect
+        outputParams.set(OutputParams.KEY_EFFECT, effect.ordinal)
         outputParams.set(OutputParams.KEY_EFFECT_SIZE, if (effectsWithoutSize.contains(effect)) 0 else binding.seekBarEffect.progress + 2)
 
         outputParams.set(OutputParams.KEY_DURATION, binding.seekBarDuration.progress)
@@ -446,10 +455,12 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
 
             if (binding.spinnerEffect.selectedItemPosition > 0) {
                 val effectSize = binding.seekBarEffect.progress + 2
-                when (binding.spinnerEffect.selectedItemPosition) {
-                    EFFECT_AVERAGE -> frameConsumer = AverageFramesFilter(effectSize, frameConsumer)
-                    EFFECT_HDR -> frameConsumer = HDRFramesFilter(effectSize, frameConsumer)
-                    EFFECT_TRANSITION -> frameConsumer = TransitionFramesFilter(effectSize, frameConsumer)
+                when (currentEffect) {
+                    Effect.AVERAGE -> frameConsumer = AverageFramesFilter(effectSize, frameConsumer)
+                    Effect.HDR -> frameConsumer = HDRFramesFilter(effectSize, frameConsumer)
+                    Effect.TRANSITION -> frameConsumer = TransitionFramesFilter(effectSize, frameConsumer)
+                    Effect.ENDLESS_AVERAGE -> frameConsumer = EndlessAverageFramesFilter(frameConsumer)
+                    Effect.NONE -> {} //avoid warning
                 }
             }
 
@@ -528,7 +539,7 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
         val enabled = null != framesInput
         binding.seekBarSpeed.isEnabled = enabled
         binding.spinnerEffect.isEnabled = enabled
-        binding.seekBarEffect.isEnabled = enabled && !effectsWithoutSize.contains(binding.spinnerEffect.selectedItemPosition)
+        binding.seekBarEffect.isEnabled = enabled && !effectsWithoutSize.contains(currentEffect)
         binding.seekBarFPS.isEnabled = enabled
         binding.seekBarDuration.isEnabled = enabled
         binding.switchAlign.isEnabled = enabled
