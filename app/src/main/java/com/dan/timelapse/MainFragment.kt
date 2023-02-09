@@ -30,6 +30,7 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
         enum class Effect {
             NONE,
             AVERAGE,
+            AVERAGE_WEIGHTED_FOR_LAST,
             ENDLESS_AVERAGE,
             HDR,
             TRANSITION
@@ -459,6 +460,7 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
                     Effect.AVERAGE -> frameConsumer = AverageFramesFilter(effectSize, frameConsumer)
                     Effect.HDR -> frameConsumer = HDRFramesFilter(effectSize, frameConsumer)
                     Effect.TRANSITION -> frameConsumer = TransitionFramesFilter(effectSize, frameConsumer)
+                    Effect.AVERAGE_WEIGHTED_FOR_LAST -> frameConsumer = AverageWeightedForLastFramesFilter(effectSize, frameConsumer)
                     Effect.ENDLESS_AVERAGE -> frameConsumer = EndlessAverageFramesFilter(frameConsumer)
                     Effect.NONE -> {} //avoid warning
                 }

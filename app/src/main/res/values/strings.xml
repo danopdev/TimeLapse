@@ -3,6 +3,7 @@
     <string-array name="effect">
         <item>None</item>
         <item>Average</item>
+        <item>Average weighted for last</item>
         <item>Endless average</item>
         <item>HDR</item>
         <item>Transition</item>
