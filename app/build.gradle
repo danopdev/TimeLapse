@@ -24,7 +24,7 @@ android {
 
     defaultConfig {
         applicationId "com.dan.timelapse"
-        minSdkVersion 28
+        minSdkVersion 29
         targetSdkVersion 30
         versionCode 3
         versionName '1.3'
