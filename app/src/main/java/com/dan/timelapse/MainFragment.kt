@@ -33,13 +33,17 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
             AVERAGE_WEIGHTED_FOR_LAST,
             AVERAGE_WEIGHTED_FOR_LIGHT,
             ENDLESS_AVERAGE,
+            ENDLESS_AVERAGE_WEIGHTED_FOR_LAST,
+            ENDLESS_AVERAGE_WEIGHTED_FOR_LIGHT,
             HDR,
             TRANSITION
         }
 
         private val effectsWithoutSize = setOf(
             Effect.NONE,
-            Effect.ENDLESS_AVERAGE
+            Effect.ENDLESS_AVERAGE,
+            Effect.ENDLESS_AVERAGE_WEIGHTED_FOR_LAST,
+            Effect.ENDLESS_AVERAGE_WEIGHTED_FOR_LIGHT
         )
 
         fun show(activity: MainActivity) {
@@ -458,13 +462,15 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
             if (binding.spinnerEffect.selectedItemPosition > 0) {
                 val effectSize = binding.seekBarEffect.progress + 2
                 when (currentEffect) {
+                    Effect.NONE -> {} //avoid warning
                     Effect.AVERAGE -> frameConsumer = AverageFramesFilter(effectSize, frameConsumer)
-                    Effect.HDR -> frameConsumer = HDRFramesFilter(effectSize, frameConsumer)
-                    Effect.TRANSITION -> frameConsumer = TransitionFramesFilter(effectSize, frameConsumer)
                     Effect.AVERAGE_WEIGHTED_FOR_LAST -> frameConsumer = AverageWeightedForLastFramesFilter(effectSize, frameConsumer)
                     Effect.AVERAGE_WEIGHTED_FOR_LIGHT -> frameConsumer = AverageWeightedForLightFramesFilter(effectSize, frameConsumer)
                     Effect.ENDLESS_AVERAGE -> frameConsumer = EndlessAverageFramesFilter(frameConsumer)
-                    Effect.NONE -> {} //avoid warning
+                    Effect.ENDLESS_AVERAGE_WEIGHTED_FOR_LAST -> frameConsumer = EndlessAverageWeightedForLastFramesFilter(frameConsumer)
+                    Effect.ENDLESS_AVERAGE_WEIGHTED_FOR_LIGHT -> frameConsumer = EndlessAverageWeightedForLightFramesFilter(frameConsumer)
+                    Effect.HDR -> frameConsumer = HDRFramesFilter(effectSize, frameConsumer)
+                    Effect.TRANSITION -> frameConsumer = TransitionFramesFilter(effectSize, frameConsumer)
                 }
             }
 

@@ -6,6 +6,8 @@
         <item>Average weighted for last</item>
         <item>Average weighted for light</item>
         <item>Endless average</item>
+        <item>Endless average weighted for last</item>
+        <item>Endless average weighted for light</item>
         <item>HDR</item>
         <item>Transition</item>
     </string-array>
