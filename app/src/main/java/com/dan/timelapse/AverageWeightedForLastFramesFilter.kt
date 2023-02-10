@@ -17,15 +17,9 @@ class AverageWeightedForLastFramesFilter(size: Int, nextConsumer: FramesConsumer
     }
 
     override fun consumeSum(index: Int, sum: Mat, frames: List<Mat>) {
-        var counter = frames.size + 1
-        Core.add( sum, frames.last(), extraSum, Mat(), sum.type() )
-
-        for(i in 1 until frames.size / 2) {
-            Core.add( extraSum, frames.last(), extraSum, Mat(), sum.type() )
-            counter++
-        }
-
-        extraSum.convertTo(outputFrame, CvType.CV_8UC3, 1.0 / counter)
+        val extra = frames.size / 2
+        Core.addWeighted( sum, 1.0, frames.last(), extra.toDouble(), 0.0, extraSum, sum.type() )
+        extraSum.convertTo(outputFrame, CvType.CV_8UC3, 1.0 / (frames.size + extra))
         next(index, outputFrame)
     }
 }
