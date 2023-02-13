@@ -9,6 +9,10 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.dan.timelapse.screens.AppFragment
+import com.dan.timelapse.screens.BusyDialog
+import com.dan.timelapse.screens.MainFragment
+import com.dan.timelapse.utils.Settings
 
 
 class MainActivity : AppCompatActivity() {

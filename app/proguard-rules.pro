@@ -20,6 +20,6 @@
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
 
--keepclassmembers class com.dan.timelapse.Settings {
+-keepclassmembers class com.dan.timelapse.utils.Settings {
    public *;
 }
