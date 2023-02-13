@@ -17,7 +17,7 @@ class Settings( private val activity: Activity) {
     companion object {
         val SAVE_FOLDER = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES), "TimeLapse")
 
-        val FPS_VALUES = arrayOf( 5, 10, 15, 30, 60, 120, 240 )
+        val FPS_VALUES = arrayOf( 5, 10, 15, 20, 25, 30, 60, 120, 240 )
 
         fun getClosestFpsIndex(fps: Int): Int {
             for (index in FPS_VALUES.lastIndex downTo  0) {
