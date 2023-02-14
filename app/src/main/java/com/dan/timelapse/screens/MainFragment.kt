@@ -42,11 +42,13 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
         enum class Effect {
             NONE,
             AVERAGE,
-            AVERAGE_WEIGHTED_FOR_LAST,
-            AVERAGE_WEIGHTED_FOR_LIGHT,
             ENDLESS_AVERAGE,
+            AVERAGE_WEIGHTED_FOR_LAST,
             ENDLESS_AVERAGE_WEIGHTED_FOR_LAST,
+            AVERAGE_WEIGHTED_FOR_LIGHT,
             ENDLESS_AVERAGE_WEIGHTED_FOR_LIGHT,
+            LIGHTEST_PIXELS,
+            ENDLESS_LIGHTEST_PIXELS,
             HDR,
             TRANSITION
         }
@@ -55,7 +57,8 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
             Effect.NONE,
             Effect.ENDLESS_AVERAGE,
             Effect.ENDLESS_AVERAGE_WEIGHTED_FOR_LAST,
-            Effect.ENDLESS_AVERAGE_WEIGHTED_FOR_LIGHT
+            Effect.ENDLESS_AVERAGE_WEIGHTED_FOR_LIGHT,
+            Effect.ENDLESS_LIGHTEST_PIXELS
         )
 
         fun show(activity: MainActivity) {
@@ -495,11 +498,13 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
                 when (currentEffect) {
                     Effect.NONE -> {} //avoid warning
                     Effect.AVERAGE -> frameConsumer = AverageFramesFilter(effectSize, frameConsumer)
-                    Effect.AVERAGE_WEIGHTED_FOR_LAST -> frameConsumer = AverageWeightedForLastFramesFilter(effectSize, frameConsumer)
-                    Effect.AVERAGE_WEIGHTED_FOR_LIGHT -> frameConsumer = AverageWeightedForLightFramesFilter(effectSize, frameConsumer)
                     Effect.ENDLESS_AVERAGE -> frameConsumer = EndlessAverageFramesFilter(frameConsumer)
+                    Effect.AVERAGE_WEIGHTED_FOR_LAST -> frameConsumer = AverageWeightedForLastFramesFilter(effectSize, frameConsumer)
                     Effect.ENDLESS_AVERAGE_WEIGHTED_FOR_LAST -> frameConsumer = EndlessAverageWeightedForLastFramesFilter(frameConsumer)
+                    Effect.AVERAGE_WEIGHTED_FOR_LIGHT -> frameConsumer = AverageWeightedForLightFramesFilter(effectSize, frameConsumer)
                     Effect.ENDLESS_AVERAGE_WEIGHTED_FOR_LIGHT -> frameConsumer = EndlessAverageWeightedForLightFramesFilter(frameConsumer)
+                    Effect.LIGHTEST_PIXELS -> frameConsumer = LightestPixelsFramesFilter(effectSize, frameConsumer)
+                    Effect.ENDLESS_LIGHTEST_PIXELS -> frameConsumer = EndlessLightestPixelsFramesFilter(frameConsumer)
                     Effect.HDR -> frameConsumer = HDRFramesFilter(effectSize, frameConsumer)
                     Effect.TRANSITION -> frameConsumer = TransitionFramesFilter(effectSize, frameConsumer)
                 }

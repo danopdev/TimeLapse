@@ -3,11 +3,13 @@
     <string-array name="effect">
         <item>None</item>
         <item>Average</item>
-        <item>Average weighted for last</item>
-        <item>Average weighted for light</item>
         <item>Endless average</item>
+        <item>Average weighted for last</item>
         <item>Endless average weighted for last</item>
+        <item>Average weighted for light</item>
         <item>Endless average weighted for light</item>
+        <item>Lightest pixels</item>
+        <item>Endless lightest pixels</item>
         <item>HDR</item>
         <item>Transition</item>
     </string-array>
