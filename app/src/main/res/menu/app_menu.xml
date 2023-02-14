@@ -8,6 +8,11 @@
         android:title="Open Video"
         app:showAsAction="always" />
     <item
+        android:id="@+id/menuSave"
+        android:icon="@android:drawable/ic_menu_save"
+        android:title="Save"
+        app:showAsAction="always" />
+    <item
         android:id="@+id/menuOpenPhotos"
         android:title="Open Photos"
         app:showAsAction="never" />
@@ -16,13 +21,8 @@
         android:title="Open Folder"
         app:showAsAction="never" />
     <item
-        android:id="@+id/menuSave"
-        android:icon="@android:drawable/ic_menu_save"
-        android:title="Save"
-        app:showAsAction="always" />
-    <item
         android:id="@+id/menuSettings"
         android:icon="@android:drawable/ic_menu_preferences"
         android:title="Settings"
-        app:showAsAction="always" />
+        app:showAsAction="never" />
 </menu>
