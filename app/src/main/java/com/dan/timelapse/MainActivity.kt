@@ -149,6 +149,7 @@ class MainActivity : AppCompatActivity() {
     private fun onPermissionsAllowed() {
         try {
             System.loadLibrary("opencv_java4")
+            System.loadLibrary("timelapse")
         } catch (e: Exception) {
             fatalError("Failed to initialize OpenCV")
         }
