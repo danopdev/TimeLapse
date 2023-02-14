@@ -8,12 +8,16 @@ class OutputParams {
         const val COMPARE_CHANGED_ONLY_FPS = 1
         const val COMPARE_CHANGED = 2
 
+        const val KEY_H265 = "H265"
+        const val KEY_CROP = "CROP"
+        const val KEY_4K = "4K"
         const val KEY_FPS = "FPS"
         const val KEY_SPEED = "SPEED"
         const val KEY_ALIGN = "ALIGN"
         const val KEY_EFFECT = "EFFECT"
         const val KEY_EFFECT_SIZE = "EFFECT-SIZE"
         const val KEY_DURATION = "DURATION"
+        const val KEY_ORIENTATION = "ORIENTATION"
 
         private fun compare(a: Map<String, Int>, b: Map<String, Int>): Int {
             var fpsChanged = false

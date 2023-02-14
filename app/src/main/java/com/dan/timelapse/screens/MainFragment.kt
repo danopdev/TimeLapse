@@ -36,6 +36,9 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
         private const val TITLE_GENERATE = "Generate"
         private const val TITLE_SAVE = "Save"
 
+        private const val ORIENTATION_LANDSCAPE = 1
+        private const val ORIENTATION_PORTRAIT = 2
+
         enum class Effect {
             NONE,
             AVERAGE,
@@ -106,8 +109,12 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
         binding.video.start()
     }
 
-    private fun getCurrentOutputParams(): OutputParams {
+    private fun getCurrentOutputParams(framesInput: FramesInput): OutputParams {
         val outputParams = OutputParams()
+
+        outputParams.set(OutputParams.KEY_H265, if(settings.h265) 1 else 0)
+        outputParams.set(OutputParams.KEY_CROP, if(settings.crop) 1 else 0)
+        outputParams.set(OutputParams.KEY_4K, if(settings.encode4K) 1 else 0)
 
         outputParams.set(OutputParams.KEY_SPEED, binding.seekBarSpeed.progress + 1)
         outputParams.set(OutputParams.KEY_ALIGN, if (binding.switchAlign.isChecked) alignMaskId else -1)
@@ -120,6 +127,19 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
 
         val fps = Settings.FPS_VALUES[binding.seekBarFPS.progress]
         outputParams.set(OutputParams.KEY_FPS, fps)
+
+        val orientation = when(binding.spinnerOrientation.selectedItemPosition) {
+            ORIENTATION_LANDSCAPE -> ORIENTATION_LANDSCAPE
+            ORIENTATION_PORTRAIT -> ORIENTATION_PORTRAIT
+            else -> {
+                if (framesInput.width >= framesInput.height)
+                    ORIENTATION_LANDSCAPE
+                else
+                    ORIENTATION_PORTRAIT
+            }
+        }
+
+        outputParams.set(OutputParams.KEY_ORIENTATION, orientation)
 
         return outputParams
     }
@@ -137,9 +157,11 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
     }
 
     private fun videoPlayGenerated(generateIfNeeded: Boolean) {
+        val framesInput = this.framesInput ?: return
+
         videoStop()
 
-        val outputParams = getCurrentOutputParams()
+        val outputParams = getCurrentOutputParams(framesInput)
         val changes = outputParams.compareWith(this.outputParams)
 
         if (!tmpOutputVideo.exists() || OutputParams.COMPARE_NOT_CHANGED != changes) {
@@ -452,12 +474,12 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
             var videoWidth = 1920
             var videoHeight = 1080
 
-            if (settings.encode4K) {
+            if (outputParams.get(OutputParams.KEY_4K) != 0) {
                 videoWidth *= 2
                 videoHeight *= 2
             }
 
-            if (framesInput.width < framesInput.height) {
+            if (ORIENTATION_PORTRAIT == outputParams.get(OutputParams.KEY_ORIENTATION)) {
                 val tmp = videoWidth
                 videoWidth = videoHeight
                 videoHeight = tmp
