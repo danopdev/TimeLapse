@@ -9,7 +9,6 @@ import android.view.*
 import android.widget.AdapterView
 import android.widget.SeekBar
 import androidx.appcompat.app.AppCompatActivity
-import androidx.documentfile.provider.DocumentFile
 import com.dan.timelapse.*
 import com.dan.timelapse.databinding.MainFragmentBinding
 import com.dan.timelapse.filters.*
@@ -18,6 +17,7 @@ import com.dan.timelapse.framesinput.ImagesFramesInput
 import com.dan.timelapse.framesinput.VideoFramesInput
 import com.dan.timelapse.utils.OutputParams
 import com.dan.timelapse.utils.Settings
+import com.dan.timelapse.utils.UriFile
 import com.dan.timelapse.video.VideoTools
 import com.dan.timelapse.video.VideoWriter
 import kotlinx.coroutines.*
@@ -291,15 +291,21 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
         val uri = intent.data
 
         if (null != uri) {
-            val mimeType = DocumentFile.fromSingleUri(context, uri)?.type
-            if (null != mimeType && mimeType.startsWith("video/")) {
-                openVideoFile(uri)
+            val uriFile = UriFile.fromSingleUri(context, uri)
+            if (null != uriFile) {
+                if (uriFile.isVideo) {
+                    openVideoFile(uriFile)
+                } else if (uriFile.isDirectory) {
+                    openImageFolder(uriFile)
+                }
                 return
             }
 
-            val document = DocumentFile.fromTreeUri(context, uri) ?: return
-            if (document.isDirectory) {
-                openImageFolder(uri)
+            val uriFolder = UriFile.fromTreeUri(context, uri)
+            if (null != uriFolder) {
+                if (uriFolder.isDirectory) {
+                    openImageFolder(uriFolder)
+                }
             }
 
             return
@@ -313,7 +319,8 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
                 }
 
                 if (clipData.description.hasMimeType("video/*")) {
-                    openVideoFile(uriList[0])
+                    val uriFile = UriFile.fromSingleUri(context, uriList[0])
+                    if (null != uriFile) openVideoFile(uriFile)
                 } else if (clipData.description.hasMimeType("image/*")) {
                     openImagesFiles(uriList)
                 }
@@ -366,10 +373,10 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
         startActivityForResult(intent, INTENT_OPEN_FOLDER)
     }
 
-    private fun openVideoFile(uri: Uri) {
+    private fun openVideoFile(uriFile: UriFile) {
         cleanUp()
         try {
-            setFramesInput( VideoFramesInput(requireContext(), uri) )
+            setFramesInput( VideoFramesInput(uriFile) )
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -378,16 +385,16 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
     private fun openImagesFiles(uris: List<Uri>) {
         cleanUp()
         try {
-            setFramesInput( ImagesFramesInput(requireContext(), uris) )
+            setFramesInput( ImagesFramesInput.fromFiles(requireContext(), uris) )
         } catch (e: Exception) {
             e.printStackTrace()
         }
     }
 
-    private fun openImageFolder(folderUri: Uri) {
+    private fun openImageFolder(folderUri: UriFile) {
         cleanUp()
         try {
-            setFramesInput( ImagesFramesInput.fromFolder(requireContext(), folderUri) )
+            setFramesInput( ImagesFramesInput.fromFolder(folderUri) )
         } catch (e: Exception) {
             e.printStackTrace()
         }

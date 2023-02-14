@@ -1,18 +1,17 @@
 package com.dan.timelapse.framesinput
 
-import android.content.Context
 import android.net.Uri
-import androidx.documentfile.provider.DocumentFile
+import com.dan.timelapse.utils.UriFile
 import com.dan.timelapse.video.VideoTools
 import org.opencv.core.Mat
 import org.opencv.videoio.VideoCapture
 import org.opencv.videoio.Videoio.*
 import java.io.FileNotFoundException
 
-class VideoFramesInput( private val context: Context, private val uri: Uri) : FramesInput() {
+class VideoFramesInput(private val _uriFile: UriFile) : FramesInput() {
     companion object {
-        private fun open(context: Context, uri: Uri): VideoCapture {
-            val pfd = context.contentResolver.openFileDescriptor(uri, "r") ?: throw FileNotFoundException()
+        private fun open(uriFile: UriFile): VideoCapture {
+            val pfd = uriFile.context.contentResolver.openFileDescriptor(uriFile.uri, "r") ?: throw FileNotFoundException()
             val fd = pfd.detachFd()
             val videoCapture = VideoCapture(":$fd")
             pfd.close()
@@ -21,15 +20,14 @@ class VideoFramesInput( private val context: Context, private val uri: Uri) : Fr
             return videoCapture
         }
 
-        private fun withVideoInput(context: Context, uri: Uri, callback: (VideoCapture)->Unit) {
-            val videoInput = open(context, uri)
+        private fun withVideoInput(uriFile: UriFile, callback: (VideoCapture)->Unit) {
+            val videoInput = open(uriFile)
             callback(videoInput)
             videoInput.release()
         }
     }
 
     private var _fps: Int = 0
-    private val _name: String
     private var _width: Int = 0
     private var _height: Int = 0
     private var _size: Int = 0
@@ -38,7 +36,7 @@ class VideoFramesInput( private val context: Context, private val uri: Uri) : Fr
         get() = _fps
 
     override val name: String
-        get() = _name
+        get() = _uriFile.name
 
     override val width: Int
         get() = _width
@@ -47,27 +45,25 @@ class VideoFramesInput( private val context: Context, private val uri: Uri) : Fr
         get() = _height
 
     override val videoUri: Uri
-        get() = uri
+        get() = _uriFile.uri
 
     override val size: Int
         get() = _size
 
     init {
-        val document = DocumentFile.fromSingleUri(context, uri) ?: throw FileNotFoundException()
-        _name = fixName(document.name)
-        withVideoInput(context, uri) { videoInput ->
+        withVideoInput(_uriFile) { videoInput ->
             _fps = videoInput.get(CAP_PROP_FPS).toInt()
             _width = videoInput.get(CAP_PROP_FRAME_WIDTH).toInt()
             _height = videoInput.get(CAP_PROP_FRAME_HEIGHT).toInt()
             _size = videoInput.get(CAP_PROP_FRAME_COUNT).toInt()
         }
 
-        if (_size <= 0) _size = VideoTools.countFrames(context, uri)
+        if (_size <= 0) _size = VideoTools.countFrames(_uriFile.context, _uriFile.uri)
     }
 
     override fun forEachFrame(callback: (Int, Int, Mat)->Boolean) {
         var counter = 0
-        withVideoInput(context, uri) { videoInput ->
+        withVideoInput(_uriFile) { videoInput ->
             val frame = Mat()
             while(counter < _size && videoInput.read(frame) ) {
                 if (!callback(counter, _size, frame)) break
