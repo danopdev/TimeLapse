@@ -4,7 +4,7 @@
 
 using namespace cv;
 
-inline static unsigned int calculateLuminance(const Point3_<uint8_t>* pixel) {
+inline static int calculateLuminance(const Point3_<uint8_t>* pixel) {
     return (int)(0.299 * (int)pixel->x + 0.587 * (int)pixel->y + (int)0.114 * (int)pixel->z);
 }
 
@@ -31,7 +31,7 @@ Java_com_dan_timelapse_images_ImageTools_00024Companion_mergeLightestPixelsNativ
     Mat &imagesAsMat = *((Mat *) images_nativeObj);
     std::vector<Mat> images;
     Mat_to_vector_Mat(imagesAsMat, images);
-    int size = images.size();
+    const size_t size = images.size();
 
     Mat &output = *((Mat *) output_nativeObj);
 
@@ -39,12 +39,12 @@ Java_com_dan_timelapse_images_ImageTools_00024Companion_mergeLightestPixelsNativ
 
     output.forEach<Point3_<uint8_t>>(
     [images, size](Point3_<uint8_t>& pixel, const int *position) -> void {
-        const Point3_<uint8_t> *srcPixel = NULL;
+        const Point3_<uint8_t> *srcPixel = nullptr;
         int luminance;
-        const Point3_<uint8_t> *bestSrcPixel = (const Point3_<uint8_t>*)images[0].ptr(position);
+        auto *bestSrcPixel = (const Point3_<uint8_t>*)images[0].ptr(position);
         int bestLuminance = calculateLuminance(bestSrcPixel);
 
-        for(int imageIndex = 1; imageIndex < size; imageIndex++) {
+        for(size_t imageIndex = 1; imageIndex < size; imageIndex++) {
             srcPixel = (const Point3_<uint8_t>*)images[imageIndex].ptr(position);
             luminance = calculateLuminance(srcPixel);
             if (luminance > bestLuminance) {
