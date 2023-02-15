@@ -15,7 +15,7 @@ class VideoWriter(
 
     }
 
-    override fun stop() {
+    override fun stop(canceled: Boolean) {
         encoder?.let {
             it.release()
             encoder = null

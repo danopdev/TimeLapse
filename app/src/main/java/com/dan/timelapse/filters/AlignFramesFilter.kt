@@ -11,6 +11,12 @@ class AlignCache  {
     val firstFramePts = MatOfPoint2f()
     val alignmentMat = mutableListOf<Mat?>()
 
+    fun resetIfSizeChanged(width: Int, height: Int) {
+        if (width != firstGrayFrame.width() || height != firstGrayFrame.height()) {
+            resetAll()
+        }
+    }
+
     fun resetAll() {
         firstGrayFrame.release()
         firstFramePts.release()

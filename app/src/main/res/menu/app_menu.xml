@@ -21,6 +21,9 @@
         android:title="Open Folder"
         app:showAsAction="never" />
     <item
+        android:id="@+id/menuSaveLastFrameAsPhoto"
+        android:title="Save last frame as Photo" />
+    <item
         android:id="@+id/menuSettings"
         android:icon="@android:drawable/ic_menu_preferences"
         android:title="Settings"

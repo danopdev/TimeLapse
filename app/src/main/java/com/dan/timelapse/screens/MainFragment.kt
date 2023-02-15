@@ -15,6 +15,7 @@ import com.dan.timelapse.filters.*
 import com.dan.timelapse.framesinput.FramesInput
 import com.dan.timelapse.framesinput.ImagesFramesInput
 import com.dan.timelapse.framesinput.VideoFramesInput
+import com.dan.timelapse.images.ImageWriter
 import com.dan.timelapse.utils.OutputParams
 import com.dan.timelapse.utils.Settings
 import com.dan.timelapse.utils.UriFile
@@ -35,6 +36,7 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
 
         private const val TITLE_GENERATE = "Generate"
         private const val TITLE_SAVE = "Save"
+        private const val TITLE_SAVE_PHOTO = "Save Photo"
 
         private const val ORIENTATION_LANDSCAPE = 1
         private const val ORIENTATION_PORTRAIT = 2
@@ -68,6 +70,7 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
 
     private lateinit var binding: MainFragmentBinding
     private var menuSave: MenuItem? = null
+    private var menuSaveLastFrameAsPhoto: MenuItem? = null
     private var framesInput: FramesInput? = null
     private var firstFrame = Mat()
     private val firstFrameMask = Mat()
@@ -244,12 +247,14 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
         inflater.inflate(R.menu.app_menu, menu)
 
         menuSave = menu.findItem(R.id.menuSave)
+        menuSaveLastFrameAsPhoto = menu.findItem(R.id.menuSaveLastFrameAsPhoto)
 
         updateView()
     }
 
     override fun onDestroyOptionsMenu() {
         menuSave = null
+        menuSaveLastFrameAsPhoto = null
         super.onDestroyOptionsMenu()
     }
 
@@ -272,6 +277,11 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
 
             R.id.menuSave -> {
                 handleSave()
+                return true
+            }
+
+            R.id.menuSaveLastFrameAsPhoto -> {
+                handleSaveLastFrameAsPhoto()
                 return true
             }
 
@@ -415,7 +425,7 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
 
     private fun handleGenerate(outputParams: OutputParams) {
         runAsync(TITLE_GENERATE, 0, true) {
-            generateAsync(outputParams)
+            generateAsync(outputParams, false)
         }
     }
 
@@ -426,9 +436,17 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
         }
     }
 
+    private fun handleSaveLastFrameAsPhoto() {
+        val framesInput = this.framesInput ?: return
+        videoStop()
+        runAsync(TITLE_SAVE_PHOTO) {
+            generateAsync(getCurrentOutputParams(framesInput), true)
+        }
+    }
+
     private fun saveAsync() {
         var success = false
-        val outputFile = getOutputFile()
+        val outputFile = getOutputFile(true)
 
         try {
             val inputStream = tmpOutputVideo.inputStream()
@@ -448,41 +466,40 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
         showToast(if (success) "Saved: ${outputFile.absolutePath}" else "Failed !")
     }
 
-    private fun createOutputFolder() {
-        if (!Settings.SAVE_FOLDER.exists()) Settings.SAVE_FOLDER.mkdirs()
+    private fun buildFile(folder: File, suffix: String, ext: String, counter: Int): File {
+        return File(folder, suffix + (if (0 == counter) "" else "_${String.format("%03d", counter)}") + "." + ext)
     }
 
-    private fun buildFile(suffix: String, counter: Int): File {
-        return File(Settings.SAVE_FOLDER, suffix + (if (0 == counter) "" else "_${String.format("%03d", counter)}") + ".mp4")
-    }
-
-    private fun getOutputFile(): File {
+    private fun getOutputFile(isVideo: Boolean): File {
         val framesInput = this.framesInput ?: throw FileNotFoundException()
-        createOutputFolder()
+        val ext = if (isVideo) Settings.EXT_VIDEO else Settings.EXT_PHOTO
+        val folder = if (isVideo) Settings.VIDEO_SAVE_FOLDER else Settings.PHOTO_SAVE_FOLDER
+        if (!folder.exists()) folder.mkdirs()
 
-        var outputFile = buildFile(framesInput.name, 0)
+        var outputFile = buildFile(folder, framesInput.name, ext, 0)
         var counter = 0
 
         while(outputFile.exists() && counter < 998) {
             counter++
-            outputFile = buildFile(framesInput.name, counter)
+            outputFile = buildFile(folder, framesInput.name, ext, counter)
         }
 
         return outputFile
     }
 
-    private fun generateAsync(outputParams: OutputParams) {
-        this.outputParams = null
-        val framesInput = this.framesInput ?: return
-        var success = false
+    private fun generateAsync(
+            outputParams: OutputParams,
+            framesInput: FramesInput,
+            finalConsumer: FramesConsumer,
+            alignCache: AlignCache,
+            _videoWidth: Int = -1,
+            _videoHeight: Int = -1): Boolean {
+        var videoWidth = _videoWidth
+        var videoHeight = _videoHeight
 
-        try {
-            if (tmpOutputVideo.exists()) tmpOutputVideo.delete()
-
-            val fps = Settings.FPS_VALUES[binding.seekBarFPS.progress]
-
-            var videoWidth = 1920
-            var videoHeight = 1080
+        if (videoWidth <= 0 || videoHeight <= 0) {
+            videoWidth = 1920
+            videoHeight = 1080
 
             if (outputParams.get(OutputParams.KEY_4K) != 0) {
                 videoWidth *= 2
@@ -494,69 +511,126 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
                 videoWidth = videoHeight
                 videoHeight = tmp
             }
+        }
 
-            var frameConsumer: FramesConsumer = VideoWriter(
+        var frameConsumer: FramesConsumer = finalConsumer
+
+        if (binding.spinnerEffect.selectedItemPosition > 0) {
+            val effectSize = binding.seekBarEffect.progress + 2
+            when (currentEffect) {
+                Effect.NONE -> {} //avoid warning
+                Effect.AVERAGE -> frameConsumer = AverageFramesFilter(effectSize, frameConsumer)
+                Effect.ENDLESS_AVERAGE -> frameConsumer = EndlessAverageFramesFilter(frameConsumer)
+                Effect.AVERAGE_WEIGHTED_FOR_LAST -> frameConsumer = AverageWeightedForLastFramesFilter(effectSize, frameConsumer)
+                Effect.ENDLESS_AVERAGE_WEIGHTED_FOR_LAST -> frameConsumer = EndlessAverageWeightedForLastFramesFilter(frameConsumer)
+                Effect.AVERAGE_WEIGHTED_FOR_LIGHT -> frameConsumer = AverageWeightedForLightFramesFilter(effectSize, frameConsumer)
+                Effect.ENDLESS_AVERAGE_WEIGHTED_FOR_LIGHT -> frameConsumer = EndlessAverageWeightedForLightFramesFilter(frameConsumer)
+                Effect.LIGHTEST_PIXELS -> frameConsumer = LightestPixelsFramesFilter(effectSize, frameConsumer)
+                Effect.ENDLESS_LIGHTEST_PIXELS -> frameConsumer = EndlessLightestPixelsFramesFilter(frameConsumer)
+                Effect.HDR -> frameConsumer = HDRFramesFilter(effectSize, frameConsumer)
+                Effect.TRANSITION -> frameConsumer = TransitionFramesFilter(effectSize, frameConsumer)
+            }
+        }
+
+        if (binding.switchAlign.isChecked) {
+            alignCache.resetIfSizeChanged(videoWidth, videoHeight)
+            frameConsumer = AlignFramesFilter(firstFrameMask, alignCache, frameConsumer)
+        }
+
+        frameConsumer = ScaleFramesFilter( settings.crop, videoWidth, videoHeight, frameConsumer )
+
+        if (binding.seekBarSpeed.progress > 0) {
+            frameConsumer = SampleFramesFilter( binding.seekBarSpeed.progress + 1, frameConsumer )
+        }
+
+        val maxFrames = binding.seekBarDuration.progress * framesInput.fps
+
+        BusyDialog.showCancel()
+        frameConsumer.start()
+        framesInput.forEachFrame { index, size_, frame ->
+            val size = if (0 == maxFrames) size_ else min(size_, maxFrames)
+            BusyDialog.show(TITLE_GENERATE, index, size)
+
+            if (BusyDialog.isCanceled()) {
+                false
+            } else if (maxFrames > 0 && index >= maxFrames) {
+                false
+            }
+            else {
+                frameConsumer.consume(index, frame)
+                true
+            }
+        }
+
+        val canceled = BusyDialog.isCanceled()
+        frameConsumer.stop(canceled)
+
+        return !canceled
+    }
+
+    private fun generateVideoAsync(outputParams: OutputParams, framesInput: FramesInput) {
+        this.outputParams = null
+        var success = false
+
+        try {
+            if (tmpOutputVideo.exists()) tmpOutputVideo.delete()
+
+            val fps = Settings.FPS_VALUES[binding.seekBarFPS.progress]
+            val finalFrameConsumer = VideoWriter(
                 tmpOutputVideo.absolutePath,
                 fps,
                 settings.h265 )
 
-            if (binding.spinnerEffect.selectedItemPosition > 0) {
-                val effectSize = binding.seekBarEffect.progress + 2
-                when (currentEffect) {
-                    Effect.NONE -> {} //avoid warning
-                    Effect.AVERAGE -> frameConsumer = AverageFramesFilter(effectSize, frameConsumer)
-                    Effect.ENDLESS_AVERAGE -> frameConsumer = EndlessAverageFramesFilter(frameConsumer)
-                    Effect.AVERAGE_WEIGHTED_FOR_LAST -> frameConsumer = AverageWeightedForLastFramesFilter(effectSize, frameConsumer)
-                    Effect.ENDLESS_AVERAGE_WEIGHTED_FOR_LAST -> frameConsumer = EndlessAverageWeightedForLastFramesFilter(frameConsumer)
-                    Effect.AVERAGE_WEIGHTED_FOR_LIGHT -> frameConsumer = AverageWeightedForLightFramesFilter(effectSize, frameConsumer)
-                    Effect.ENDLESS_AVERAGE_WEIGHTED_FOR_LIGHT -> frameConsumer = EndlessAverageWeightedForLightFramesFilter(frameConsumer)
-                    Effect.LIGHTEST_PIXELS -> frameConsumer = LightestPixelsFramesFilter(effectSize, frameConsumer)
-                    Effect.ENDLESS_LIGHTEST_PIXELS -> frameConsumer = EndlessLightestPixelsFramesFilter(frameConsumer)
-                    Effect.HDR -> frameConsumer = HDRFramesFilter(effectSize, frameConsumer)
-                    Effect.TRANSITION -> frameConsumer = TransitionFramesFilter(effectSize, frameConsumer)
-                }
-            }
+            success = generateAsync(
+                outputParams,
+                framesInput,
+                finalFrameConsumer,
+                alignCache
+            )
 
-            if (binding.switchAlign.isChecked) {
-                frameConsumer = AlignFramesFilter(firstFrameMask, alignCache, frameConsumer)
-            }
-
-            frameConsumer = ScaleFramesFilter( settings.crop, videoWidth, videoHeight, frameConsumer )
-
-            if (binding.seekBarSpeed.progress > 0) {
-                frameConsumer = SampleFramesFilter( binding.seekBarSpeed.progress + 1, frameConsumer )
-            }
-
-            val maxFrames = binding.seekBarDuration.progress * framesInput.fps
-
-            BusyDialog.showCancel()
-            frameConsumer.start()
-            framesInput.forEachFrame { index, size_, frame ->
-                val size = if (0 == maxFrames) size_ else min(size_, maxFrames)
-                BusyDialog.show(TITLE_GENERATE, index, size)
-
-                if (BusyDialog.isCanceled()) {
-                    false
-                } else if (maxFrames > 0 && index >= maxFrames) {
-                    false
-                }
-                else {
-                    frameConsumer.consume(index, frame)
-                    true
-                }
-        }
-            frameConsumer.stop()
-
-            if (!BusyDialog.isCanceled()) {
-                this.outputParams = outputParams
-                success = true
-            }
+            if (success) this.outputParams = outputParams
         } catch (e: Exception) {
             e.printStackTrace()
         }
 
         if (!success && tmpOutputVideo.exists()) {
             tmpOutputVideo.delete()
+        }
+    }
+
+    private fun generatePhotoAsync(outputParams: OutputParams, framesInput: FramesInput) {
+        var success = false
+        val outputFile = getOutputFile(false)
+
+        try {
+            val finalFrameConsumer = ImageWriter(outputFile, settings.jpegQuality)
+            generateAsync(
+                outputParams,
+                framesInput,
+                finalFrameConsumer,
+                AlignCache(),
+                framesInput.width,
+                framesInput.height)
+            success = finalFrameConsumer.success
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+
+        if (success) {
+            //Add it to gallery
+            MediaScannerConnection.scanFile(context, arrayOf(outputFile.absolutePath), null, null)
+
+            showToast("Saved: ${outputFile.name}")
+        }
+    }
+
+    private fun generateAsync(outputParams: OutputParams, saveAsPhoto: Boolean) {
+        val framesInput = this.framesInput ?: return
+
+        if (saveAsPhoto) {
+            generatePhotoAsync(outputParams, framesInput)
+        } else {
+            generateVideoAsync(outputParams, framesInput)
         }
 
         runOnUiThread {
@@ -607,6 +681,7 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
         val hasInputVideo = enabled && null != framesInput?.videoUri
         val hasGeneratedVideo = enabled && tmpOutputVideo.exists()
         menuSave?.isEnabled = hasGeneratedVideo
+        menuSaveLastFrameAsPhoto?.isEnabled = enabled
         binding.buttonPlayOriginal.isEnabled = hasInputVideo
         binding.buttonPlayGenerated.isEnabled = enabled
         binding.buttonStop.isEnabled = enabled

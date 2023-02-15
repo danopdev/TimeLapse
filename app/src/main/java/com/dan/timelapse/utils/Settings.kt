@@ -15,9 +15,13 @@ Settings: all public var fields will be saved
 class Settings( private val activity: Activity) {
 
     companion object {
-        val SAVE_FOLDER = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES), "TimeLapse")
+        val VIDEO_SAVE_FOLDER = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES), "TimeLapse")
+        val PHOTO_SAVE_FOLDER = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "TimeLapse")
 
         val FPS_VALUES = arrayOf( 5, 10, 15, 20, 25, 30, 60, 120, 240 )
+
+        const val EXT_VIDEO = "mp4"
+        const val EXT_PHOTO = "jpg"
 
         fun getClosestFpsIndex(fps: Int): Int {
             for (index in FPS_VALUES.lastIndex downTo  0) {
@@ -30,6 +34,7 @@ class Settings( private val activity: Activity) {
     var h265: Boolean = true
     var crop: Boolean = true
     var encode4K: Boolean = false
+    var jpegQuality = 95
 
     init {
         loadProperties()

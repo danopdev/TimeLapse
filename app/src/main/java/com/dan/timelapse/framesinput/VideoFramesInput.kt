@@ -31,12 +31,13 @@ class VideoFramesInput(private val _uriFile: UriFile) : FramesInput() {
     private var _width: Int = 0
     private var _height: Int = 0
     private var _size: Int = 0
+    private val _name: String
 
     override val fps: Int
         get() = _fps
 
     override val name: String
-        get() = _uriFile.name
+        get() = _name
 
     override val width: Int
         get() = _width
@@ -51,6 +52,8 @@ class VideoFramesInput(private val _uriFile: UriFile) : FramesInput() {
         get() = _size
 
     init {
+        _name = fixName(_uriFile.name)
+
         withVideoInput(_uriFile) { videoInput ->
             _fps = videoInput.get(CAP_PROP_FPS).toInt()
             _width = videoInput.get(CAP_PROP_FRAME_WIDTH).toInt()

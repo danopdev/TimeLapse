@@ -15,8 +15,8 @@ abstract class FramesFilter(private val nextConsumer: FramesConsumer) : FramesCo
         nextConsumer.start()
     }
 
-    override fun stop() {
-        nextConsumer.stop()
+    override fun stop(canceled: Boolean) {
+        nextConsumer.stop(canceled)
         stopFilter()
     }
 }

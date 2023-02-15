@@ -45,12 +45,13 @@ class ImagesFramesInput(private val _uriFiles: List<UriFile>) : FramesInput() {
 
     private val _width: Int
     private val _height: Int
+    private val _name: String
 
     override val fps: Int
         get() = 30
 
     override val name: String
-        get() = _uriFiles.first().name
+        get() = _name
 
     override val width: Int
         get() = _width
@@ -65,8 +66,9 @@ class ImagesFramesInput(private val _uriFiles: List<UriFile>) : FramesInput() {
         get() = null
 
     init {
+        _name = fixName(_uriFiles.first().name)
         val firstImage = Mat()
-        loadImage(_uriFiles[0], firstImage)
+        loadImage(_uriFiles.first(), firstImage)
         _width = firstImage.width()
         _height = firstImage.height()
         firstImage.release()
