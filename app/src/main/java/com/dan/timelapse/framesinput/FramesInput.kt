@@ -23,7 +23,7 @@ abstract class FramesInput {
     fun firstFrame(): Mat {
         var firstFrame = Mat()
         forEachFrame { _, _, frame ->
-            firstFrame = frame
+            firstFrame = frame.clone()
             false
         }
         return firstFrame
