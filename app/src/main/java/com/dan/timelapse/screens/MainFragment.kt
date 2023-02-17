@@ -414,10 +414,8 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
         outputParams = null
         alignCache.resetAll()
         this.framesInput = framesInput
-        //binding.seekBarSpeed.progress = 0
-        //binding.seekBarEffect.progress = 0
         binding.seekBarFPS.progress = Settings.getClosestFpsIndex(framesInput.fps)
-        //binding.switchAlign.isEnabled = false
+        firstFrame.release()
         firstFrame = framesInput.firstFrame()
         firstFrameMask.release()
         updateView()
@@ -680,8 +678,10 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
 
         val hasInputVideo = enabled && null != framesInput?.videoUri
         val hasGeneratedVideo = enabled && tmpOutputVideo.exists()
+
         menuSave?.isEnabled = hasGeneratedVideo
         menuSaveLastFrameAsPhoto?.isEnabled = enabled
+
         binding.buttonPlayOriginal.isEnabled = hasInputVideo
         binding.buttonPlayGenerated.isEnabled = enabled
         binding.buttonStop.isEnabled = enabled
