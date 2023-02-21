@@ -51,6 +51,8 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
             ENDLESS_AVERAGE_WEIGHTED_FOR_LIGHT,
             LIGHTEST_PIXELS,
             ENDLESS_LIGHTEST_PIXELS,
+            ADD,
+            ENDLESS_ADD,
             HDR,
             TRANSITION
         }
@@ -60,7 +62,8 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
             Effect.ENDLESS_AVERAGE,
             Effect.ENDLESS_AVERAGE_WEIGHTED_FOR_LAST,
             Effect.ENDLESS_AVERAGE_WEIGHTED_FOR_LIGHT,
-            Effect.ENDLESS_LIGHTEST_PIXELS
+            Effect.ENDLESS_LIGHTEST_PIXELS,
+            Effect.ENDLESS_ADD
         )
 
         fun show(activity: MainActivity) {
@@ -525,6 +528,8 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
                 Effect.ENDLESS_AVERAGE_WEIGHTED_FOR_LIGHT -> frameConsumer = EndlessAverageWeightedForLightFramesFilter(frameConsumer)
                 Effect.LIGHTEST_PIXELS -> frameConsumer = LightestPixelsFramesFilter(effectSize, frameConsumer)
                 Effect.ENDLESS_LIGHTEST_PIXELS -> frameConsumer = EndlessLightestPixelsFramesFilter(frameConsumer)
+                Effect.ADD -> frameConsumer = AddFramesFilter(effectSize, frameConsumer)
+                Effect.ENDLESS_ADD -> frameConsumer = EndlessAddFramesFilter(frameConsumer)
                 Effect.HDR -> frameConsumer = HDRFramesFilter(effectSize, frameConsumer)
                 Effect.TRANSITION -> frameConsumer = TransitionFramesFilter(effectSize, frameConsumer)
             }
