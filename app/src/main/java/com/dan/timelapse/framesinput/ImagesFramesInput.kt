@@ -14,7 +14,7 @@ class ImagesFramesInput(private val _uriFiles: List<UriFile>) : FramesInput() {
 
     companion object {
         private fun fromUriFiles(uriFiles: List<UriFile>): ImagesFramesInput {
-            val files = uriFiles.filter { it.isPhoto }
+            val files = uriFiles.filter { it.isPhoto && !it.name.startsWith('.') }
                 .sortedBy { it.name }
 
             if (files.isEmpty()) throw FileNotFoundException()
