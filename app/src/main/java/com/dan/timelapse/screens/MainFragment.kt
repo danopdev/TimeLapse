@@ -2,6 +2,7 @@ package com.dan.timelapse.screens
 
 import android.content.Intent
 import android.media.AudioManager
+import android.media.MediaMetadataRetriever
 import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Bundle
@@ -22,6 +23,7 @@ import com.dan.timelapse.utils.UriFile
 import com.dan.timelapse.video.VideoTools
 import com.dan.timelapse.video.VideoWriter
 import kotlinx.coroutines.*
+import org.opencv.android.Utils
 import org.opencv.core.Mat
 import java.io.File
 import java.io.FileNotFoundException
@@ -78,6 +80,7 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
     private var firstFrame = Mat()
     private val firstFrameMask = Mat()
     private val alignCache = AlignCache()
+    private val alignCacheForPhoto = AlignCache()
     private var outputParams: OutputParams? = null
     private var alignMaskId = 0
 
@@ -118,12 +121,11 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
         binding.video.start()
     }
 
-    private fun getCurrentOutputParams(framesInput: FramesInput): OutputParams {
+    private fun getCurrentOutputParams(framesInput: FramesInput, fullSize: Boolean): OutputParams {
         val outputParams = OutputParams()
 
         outputParams.set(OutputParams.KEY_H265, if(settings.h265) 1 else 0)
         outputParams.set(OutputParams.KEY_CROP, if(settings.crop) 1 else 0)
-        outputParams.set(OutputParams.KEY_4K, if(settings.encode4K) 1 else 0)
 
         outputParams.set(OutputParams.KEY_SPEED, binding.seekBarSpeed.progress + 1)
         outputParams.set(OutputParams.KEY_ALIGN, if (binding.switchAlign.isChecked) alignMaskId else -1)
@@ -148,7 +150,28 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
             }
         }
 
-        outputParams.set(OutputParams.KEY_ORIENTATION, orientation)
+        var width: Int
+        var height: Int
+
+        if (fullSize) {
+            width = framesInput.width
+            height = framesInput.height
+        } else if(settings.encode4K) {
+            width = 1920 * 2
+            height = 1080 * 2
+        } else {
+            width = 1920
+            height = 1080
+        }
+
+        if ((orientation == ORIENTATION_LANDSCAPE && width < height) ||(orientation == ORIENTATION_PORTRAIT && width > height)) {
+            val tmp = width
+            width = height
+            height = tmp
+        }
+
+        outputParams.set(OutputParams.KEY_WIDTH, width)
+        outputParams.set(OutputParams.KEY_HEIGHT, height)
 
         return outputParams
     }
@@ -170,7 +193,7 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
 
         videoStop()
 
-        val outputParams = getCurrentOutputParams(framesInput)
+        val outputParams = getCurrentOutputParams(framesInput, false)
         val changes = outputParams.compareWith(this.outputParams)
 
         if (!tmpOutputVideo.exists() || OutputParams.COMPARE_NOT_CHANGED != changes) {
@@ -230,6 +253,7 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
             MaskEditFragment.show(activity, firstFrame, firstFrameMask) {
                 alignMaskId++
                 alignCache.reset()
+                alignCacheForPhoto.reset()
             }
         }
 
@@ -416,6 +440,7 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
     private fun setFramesInput(framesInput: FramesInput) {
         outputParams = null
         alignCache.resetAll()
+        alignCacheForPhoto.resetAll()
         this.framesInput = framesInput
         binding.seekBarFPS.progress = Settings.getClosestFpsIndex(framesInput.fps)
         firstFrame.release()
@@ -441,7 +466,7 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
         val framesInput = this.framesInput ?: return
         videoStop()
         runAsync(TITLE_SAVE_PHOTO) {
-            generateAsync(getCurrentOutputParams(framesInput), true)
+            generateAsync(getCurrentOutputParams(framesInput, true), true)
         }
     }
 
@@ -492,28 +517,10 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
             outputParams: OutputParams,
             framesInput: FramesInput,
             finalConsumer: FramesConsumer,
-            alignCache: AlignCache,
-            _videoWidth: Int = -1,
-            _videoHeight: Int = -1): Boolean {
-        var videoWidth = _videoWidth
-        var videoHeight = _videoHeight
+            alignCache: AlignCache): Boolean {
 
-        if (videoWidth <= 0 || videoHeight <= 0) {
-            videoWidth = 1920
-            videoHeight = 1080
-
-            if (outputParams.get(OutputParams.KEY_4K) != 0) {
-                videoWidth *= 2
-                videoHeight *= 2
-            }
-
-            if (ORIENTATION_PORTRAIT == outputParams.get(OutputParams.KEY_ORIENTATION)) {
-                val tmp = videoWidth
-                videoWidth = videoHeight
-                videoHeight = tmp
-            }
-        }
-
+        val videoWidth = outputParams.get(OutputParams.KEY_WIDTH)
+        val videoHeight = outputParams.get(OutputParams.KEY_HEIGHT)
         var frameConsumer: FramesConsumer = finalConsumer
 
         if (binding.spinnerEffect.selectedItemPosition > 0) {
@@ -607,13 +614,32 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
 
         try {
             val finalFrameConsumer = ImageWriter(outputFile, settings.jpegQuality)
-            generateAsync(
-                outputParams,
-                framesInput,
-                finalFrameConsumer,
-                AlignCache(),
-                framesInput.width,
-                framesInput.height)
+
+            val changes = outputParams.compareWith(this.outputParams)
+            if (tmpOutputVideo.exists() && (OutputParams.COMPARE_NOT_CHANGED == changes || OutputParams.COMPARE_CHANGED_ONLY_FPS == changes)) {
+                try {
+                    val mediaMetadataRetriever = MediaMetadataRetriever()
+                    mediaMetadataRetriever.setDataSource(tmpOutputVideo.absolutePath)
+                    val strFrameCount = mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_FRAME_COUNT) ?: throw FileNotFoundException()
+                    val frameCount = strFrameCount.toIntOrNull() ?: throw FileNotFoundException()
+                    val bitmap = mediaMetadataRetriever.getFrameAtIndex(frameCount-1) ?: throw FileNotFoundException()
+                    val frame = Mat()
+                    Utils.bitmapToMat(bitmap, frame)
+                    finalFrameConsumer.start()
+                    finalFrameConsumer.consume(0, frame)
+                    finalFrameConsumer.stop(false)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            } else {
+                generateAsync(
+                    outputParams,
+                    framesInput,
+                    finalFrameConsumer,
+                    alignCacheForPhoto
+                )
+            }
+
             success = finalFrameConsumer.success
         } catch (e: Exception) {
             e.printStackTrace()
