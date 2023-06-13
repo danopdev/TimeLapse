@@ -35,7 +35,7 @@ class VideoEncoder(
 
             return when {
                 0 == refValue || refValue > range.end -> range.end
-                refValue < range.start -> range.end
+                refValue < range.start -> range.start
                 else -> refValue
             }
         }
