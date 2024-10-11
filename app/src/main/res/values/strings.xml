@@ -14,6 +14,8 @@
         <item>Endless add</item>
         <item>HDR</item>
         <item>Transition</item>
+        <item>Darkest pixels</item>
+        <item>Endless darkest pixels</item>
     </string-array>
     <string-array name="orientation">
         <item>Auto</item>

@@ -56,7 +56,9 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
             ADD,
             ENDLESS_ADD,
             HDR,
-            TRANSITION
+            TRANSITION,
+            DARKEST_PIXELS,
+            ENDLESS_DARKEST_PIXELS
         }
 
         private val effectsWithoutSize = setOf(
@@ -65,7 +67,8 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
             Effect.ENDLESS_AVERAGE_WEIGHTED_FOR_LAST,
             Effect.ENDLESS_AVERAGE_WEIGHTED_FOR_LIGHT,
             Effect.ENDLESS_LIGHTEST_PIXELS,
-            Effect.ENDLESS_ADD
+            Effect.ENDLESS_ADD,
+            Effect.ENDLESS_DARKEST_PIXELS,
         )
 
         fun show(activity: MainActivity) {
@@ -539,6 +542,8 @@ class MainFragment(activity: MainActivity) : AppFragment(activity) {
                 Effect.ENDLESS_ADD -> frameConsumer = EndlessAddFramesFilter(frameConsumer)
                 Effect.HDR -> frameConsumer = HDRFramesFilter(effectSize, frameConsumer)
                 Effect.TRANSITION -> frameConsumer = TransitionFramesFilter(effectSize, frameConsumer)
+                Effect.DARKEST_PIXELS -> frameConsumer = DarkestPixelsFramesFilter(effectSize, frameConsumer)
+                Effect.ENDLESS_DARKEST_PIXELS -> frameConsumer = EndlessDarkestPixelsFramesFilter(frameConsumer)
             }
         }
 

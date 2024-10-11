@@ -10,6 +10,12 @@ class ImageTools {
             mergeLightestPixelsNative(imagesMat.nativeObj, output.nativeObj)
         }
 
+        fun mergeDarkestPixels(images: List<Mat>, output: Mat) {
+            val imagesMat = Converters.vector_Mat_to_Mat(images)
+            mergeDarkestPixelsNative(imagesMat.nativeObj, output.nativeObj)
+        }
+
         private external fun mergeLightestPixelsNative(images: Long, output: Long)
+        private external fun mergeDarkestPixelsNative(images: Long, output: Long)
     }
 }

@@ -22,12 +22,9 @@ void Mat_to_vector_Mat(Mat &mat, std::vector<Mat> &v_mat) {
     }
 }
 
-extern "C"
-JNIEXPORT void JNICALL
-Java_com_dan_timelapse_images_ImageTools_00024Companion_mergeLightestPixelsNative(JNIEnv *env,
-                                                                                  jobject thiz,
-                                                                                  jlong images_nativeObj,
-                                                                                  jlong output_nativeObj) {
+
+static
+void mergePixelsByLightness(jlong images_nativeObj, jlong output_nativeObj, int luminance_alpha) {
     Mat &imagesAsMat = *((Mat *) images_nativeObj);
     std::vector<Mat> images;
     Mat_to_vector_Mat(imagesAsMat, images);
@@ -38,21 +35,41 @@ Java_com_dan_timelapse_images_ImageTools_00024Companion_mergeLightestPixelsNativ
     output.create(images[0].size(), images[0].type());
 
     output.forEach<Point3_<uint8_t>>(
-    [images, size](Point3_<uint8_t>& pixel, const int *position) -> void {
-        const Point3_<uint8_t> *srcPixel = nullptr;
-        int luminance;
-        auto *bestSrcPixel = (const Point3_<uint8_t>*)images[0].ptr(position);
-        int bestLuminance = calculateLuminance(bestSrcPixel);
+        [images, size, luminance_alpha](Point3_<uint8_t>& pixel, const int *position) -> void {
+            const Point3_<uint8_t> *srcPixel = nullptr;
+            int luminance;
+            auto *bestSrcPixel = (const Point3_<uint8_t>*)images[0].ptr(position);
+            int bestLuminance = luminance_alpha * calculateLuminance(bestSrcPixel);
 
-        for(size_t imageIndex = 1; imageIndex < size; imageIndex++) {
-            srcPixel = (const Point3_<uint8_t>*)images[imageIndex].ptr(position);
-            luminance = calculateLuminance(srcPixel);
-            if (luminance > bestLuminance) {
-                bestLuminance = luminance;
-                bestSrcPixel = srcPixel;
+            for(size_t imageIndex = 1; imageIndex < size; imageIndex++) {
+                srcPixel = (const Point3_<uint8_t>*)images[imageIndex].ptr(position);
+                luminance = luminance_alpha * calculateLuminance(srcPixel);
+                if (luminance > bestLuminance) {
+                    bestLuminance = luminance;
+                    bestSrcPixel = srcPixel;
+                }
             }
-        }
 
-        pixel = *bestSrcPixel;
-    });
+            pixel = *bestSrcPixel;
+        }
+    );
+}
+
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_dan_timelapse_images_ImageTools_00024Companion_mergeLightestPixelsNative(JNIEnv *env,
+                                                                                  jobject thiz,
+                                                                                  jlong images_nativeObj,
+                                                                                  jlong output_nativeObj) {
+    mergePixelsByLightness(images_nativeObj, output_nativeObj, 1);
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_dan_timelapse_images_ImageTools_00024Companion_mergeDarkestPixelsNative(JNIEnv *env,
+                                                                                 jobject thiz,
+                                                                                 jlong images_nativeObj,
+                                                                                 jlong output_nativeObj) {
+    mergePixelsByLightness(images_nativeObj, output_nativeObj, -1);
 }
