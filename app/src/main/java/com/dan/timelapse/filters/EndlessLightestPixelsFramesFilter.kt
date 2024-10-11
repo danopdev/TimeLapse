@@ -1,8 +1,6 @@
 package com.dan.timelapse.filters
 
 import com.dan.timelapse.images.ImageTools
-import org.opencv.core.Core
-import org.opencv.core.CvType
 import org.opencv.core.Mat
 
 class EndlessLightestPixelsFramesFilter(nextConsumer: FramesConsumer): FramesFilter(nextConsumer) {

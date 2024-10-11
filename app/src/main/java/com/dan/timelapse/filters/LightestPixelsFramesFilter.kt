@@ -3,7 +3,7 @@ package com.dan.timelapse.filters
 import com.dan.timelapse.images.ImageTools
 import org.opencv.core.Mat
 
-class LightestPixelsFramesFilter(private val size: Int, nextConsumer: FramesConsumer)
+class LightestPixelsFramesFilter(val size: Int, nextConsumer: FramesConsumer)
     : MultiFramesFilter(size, false, nextConsumer) {
 
     private val outputFrame = Mat()
